@@ -417,6 +417,24 @@ tr.active-row td {
   font-weight: 700;
 }
 
+.quick-chip {
+  width: auto;
+  padding: 2px 8px;
+  font-size: 11px;
+  font-family: var(--font-mono);
+  background: var(--card);
+  border: 1px solid var(--line-high);
+  color: var(--fg);
+  cursor: pointer;
+  border-radius: 0px !important;
+  transition: border-color 0.15s ease, background 0.15s ease;
+}
+.quick-chip:hover {
+  border-color: var(--sapphire);
+  color: var(--sapphire);
+}
+
+
 /* Badge Tags */
 .badge {
   display: inline-block;

@@ -129,3 +129,20 @@ test('budgets - backward compatibility when only days is specified', () => {
   assert.equal(calc.endDate, '2026-11-15');
   assert.equal(calc.currentAllowance, 300);
 });
+
+test('budgets - custom physical pool backing calculation', () => {
+  const envelope = {
+    id: 'env-cash',
+    name: 'Cash Envelope',
+    kind: 'envelope',
+    funding: [{ poolId: 'pool-cash', amount: 3500 }],
+    hardCap: true
+  };
+
+  const calc = calcEnvelope(envelope, [{ id: 'e1', budgetId: 'env-cash', amount: 500, type: 'expense' }]);
+  assert.equal(calc.funded, 3500);
+  assert.equal(calc.spent, 500);
+  assert.equal(calc.left, 3000);
+  assert.equal(calc.hardCap, true);
+});
+

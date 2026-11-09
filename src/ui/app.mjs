@@ -21,7 +21,7 @@ import {
 import { deriveState, computeDashboardFromRecords } from '../domain/derive.mjs';
 import { calculateCoreNumbers } from '../domain/totals.mjs';
 import { calcDailyBudget, calcEnvelope, validateExpenseAdd } from '../domain/budgets.mjs';
-import { groupObligationsByPerson, calculateObligationState, advanceBillCycle } from '../domain/obligations.mjs';
+import { groupObligationsByPerson, calculateObligationState, advanceBillCycle, extractKnownPeople } from '../domain/obligations.mjs';
 import { projectAtDate } from '../domain/projection.mjs';
 import { runInvariantsCheck, generatePythonAuditScript } from '../domain/audit.mjs';
 import { renderTrajectoryChart, renderSpendBarChart, renderPoolProportions, attachChartInteractions } from './charts.mjs';
@@ -36,6 +36,16 @@ import {
 } from '../storage/sharding.mjs';
 import { checkV1Data, migrateV1toV2, migrateV2toV3 } from '../storage/migration.mjs';
 import { exportFullBackupJSON, validateAndParseBackup } from '../storage/backup.mjs';
+
+function escapeHtml(str) {
+  if (!str) return '';
+  return String(str)
+    .replace(/&/g, '&amp;')
+    .replace(/</g, '&lt;')
+    .replace(/>/g, '&gt;')
+    .replace(/"/g, '&quot;')
+    .replace(/'/g, '&#39;');
+}
 
 export function initApp(rootElement) {
   // 1. Data bootstrap: Check v3 records, migrate from v2 or v1 if needed, or initialize with seeds
@@ -332,7 +342,7 @@ export function initApp(rootElement) {
   // TAB 2: BUDGETS
   // -------------------------------------------------------------
   function renderBudgetsTab(derived, core, today) {
-    const { budgets, transactions } = derived;
+    const { pools = [], budgets, transactions } = derived;
     const dailyBudgets = budgets.filter((b) => b.kind === 'daily');
     const envelopes = budgets.filter((b) => b.kind === 'envelope');
 
@@ -350,12 +360,13 @@ export function initApp(rootElement) {
       <div class="grid-2">
         ${dailyBudgets.map((b) => {
           const d = calcDailyBudget(b, transactions, today);
+          const fundingPoolName = pools.find((p) => p.id === (b.funding?.[0]?.poolId))?.name;
           return `
             <div class="card" style="margin:0;">
               <div class="card-title">
                 <div>
                   <strong>${b.name}</strong>
-                  <div class="mono" style="font-size:10px;color:var(--mut);">📅 ${shortDate(d.start)} → ${shortDate(d.endDate)} (${d.N}d)</div>
+                  <div class="mono" style="font-size:10px;color:var(--mut);">📅 ${shortDate(d.start)} → ${shortDate(d.endDate)} (${d.N}d)${fundingPoolName ? ` • <span class="badge blue" style="font-size:10px;padding:1px 5px;">🏦 ${escapeHtml(fundingPoolName)}</span>` : ''}</div>
                 </div>
                 <div class="action-btn-group">
                   <button class="btn-icon" data-action="edit-record" data-id="${b.id}" title="Edit Budget">✏️</button>
@@ -383,10 +394,14 @@ export function initApp(rootElement) {
       <div class="grid-2">
         ${envelopes.map((env) => {
           const s = calcEnvelope(env, transactions);
+          const fundingPoolName = pools.find((p) => p.id === (env.funding?.[0]?.poolId))?.name;
           return `
             <div class="card" style="margin:0;">
               <div class="card-title">
-                <span>${env.name}</span>
+                <div>
+                  <span>${env.name}</span>
+                  ${fundingPoolName ? `<span class="badge blue" style="font-size:10px;padding:1px 5px;margin-left:6px;">🏦 ${escapeHtml(fundingPoolName)}</span>` : ''}
+                </div>
                 <div style="display:flex;align-items:center;gap:6px;">
                   ${env.hardCap ? '<span class="badge red">HARD CAP</span>' : ''}
                   <div class="action-btn-group">
@@ -450,8 +465,9 @@ export function initApp(rootElement) {
                 <div style="font-size:11px;color:var(--mut);margin-bottom:10px;">
                   ${p.debts.length + p.receivables.length} obligation(s)${p.debts.some((d) => d.ignoreDueDate) || p.receivables.some((r) => r.ignoreDueDate) ? ' • <span style="color:var(--peach);">Open / Undated</span>' : ''}
                 </div>
-                <div style="display:flex;gap:6px;">
-                  <button class="sec sm" data-action="open-repay-modal" data-person="${p.person}">Settle / Repay</button>
+                <div style="display:flex;gap:6px;flex-wrap:wrap;">
+                  <button class="sec sm" data-action="open-person-obligation" data-person="${escapeHtml(p.person)}">+ Add Loan / Debt</button>
+                  <button class="sec sm" data-action="open-repay-modal" data-person="${escapeHtml(p.person)}">Settle / Repay</button>
                 </div>
               </div>
             `;
@@ -759,7 +775,8 @@ export function initApp(rootElement) {
               cardClass = `record-card type-budget`;
               pillHtml = `<span class="record-type-pill">BUDGET</span>`;
               mainHtml = `Budget "${d.name}" (${d.kind || 'envelope'})${d.amount ? ' • ' + formatINR(d.amount) : ''}`;
-              subHtml = `${d.kind === 'daily' && d.start && d.endDate ? `📅 ${shortDate(d.start)} → ${shortDate(d.endDate)} (${d.days}d) • ` : ''}${d.hardCap ? 'Hard Cap • ' : ''}ID: ${r.id.slice(0, 8)}`;
+              const fundingPoolName = pools.find((p) => p.id === (d.funding?.[0]?.poolId))?.name;
+              subHtml = `${fundingPoolName ? `Backed by: ${fundingPoolName} • ` : ''}${d.kind === 'daily' && d.start && d.endDate ? `📅 ${shortDate(d.start)} → ${shortDate(d.endDate)} (${d.days}d) • ` : ''}${d.hardCap ? 'Hard Cap • ' : ''}ID: ${r.id.slice(0, 8)}`;
             } else if (r.type === 'obligation') {
               cardClass = `record-card type-obligation`;
               pillHtml = `<span class="record-type-pill">OBLIGATION</span>`;
@@ -817,6 +834,7 @@ export function initApp(rootElement) {
   // -------------------------------------------------------------
   function renderAddTab(derived, core) {
     const { pools, budgets } = derived;
+    const knownPeople = extractKnownPeople(state.records);
 
     return `
       <section class="card" style="max-width:540px;margin:0 auto;">
@@ -882,9 +900,21 @@ export function initApp(rootElement) {
           <div class="form-row" id="qa-counterparty-row" style="display:none;">
             <div>
               <label>Counterparty (Person Name)</label>
-              <input id="qa-person" type="text" placeholder="e.g. Alice, Bob">
+              <input id="qa-person" type="text" list="known-people-list" placeholder="e.g. Alice, Bob">
+              ${knownPeople.length > 0 ? `
+                <div style="display:flex;flex-wrap:wrap;gap:4px;margin-top:6px;align-items:center;">
+                  <span style="font-size:10px;color:var(--mut);">Known:</span>
+                  ${knownPeople.slice(0, 8).map((p) => `
+                    <button type="button" class="quick-chip" data-fill-person="${escapeHtml(p)}">${escapeHtml(p)}</button>
+                  `).join('')}
+                </div>
+              ` : ''}
             </div>
           </div>
+
+          <datalist id="known-people-list">
+            ${knownPeople.map((p) => `<option value="${escapeHtml(p)}"></option>`).join('')}
+          </datalist>
 
           <div class="form-row" id="qa-loan-opt-row" style="display:none;margin-top:-6px;margin-bottom:12px;">
             <label style="display:flex;align-items:center;gap:6px;cursor:pointer;font-size:12px;">
@@ -916,6 +946,7 @@ export function initApp(rootElement) {
   // -------------------------------------------------------------
   function renderModal(modalName, derived, core) {
     const { pools, budgets, obligations } = derived;
+    const knownPeople = extractKnownPeople(state.records);
     let content = '';
 
     if (modalName === 'invariants') {
@@ -1028,6 +1059,21 @@ export function initApp(rootElement) {
               </div>
             ` : ''}
 
+            ${rec.type === 'budget' ? `
+              <div class="form-row">
+                <div>
+                  <label>Funded from Physical Pool</label>
+                  <select id="edit-rec-budget-pool">
+                    ${pools.filter((p) => !p.isArchived || p.id === (d.funding?.[0]?.poolId)).map((p) => `
+                      <option value="${p.id}" ${(d.funding?.[0]?.poolId || pools[0]?.id) === p.id ? 'selected' : ''}>
+                        ${escapeHtml(p.name)}
+                      </option>
+                    `).join('')}
+                  </select>
+                </div>
+              </div>
+            ` : ''}
+
             ${'name' in d ? `
               <div class="form-row">
                 <div>
@@ -1050,7 +1096,15 @@ export function initApp(rootElement) {
               <div class="form-row">
                 <div>
                   <label>Counterparty</label>
-                  <input type="text" id="edit-rec-counterparty" value="${d.counterparty || ''}">
+                  <input type="text" id="edit-rec-counterparty" list="known-people-list" value="${escapeHtml(d.counterparty || '')}">
+                  ${knownPeople.length > 0 ? `
+                    <div style="display:flex;flex-wrap:wrap;gap:4px;margin-top:6px;align-items:center;">
+                      <span style="font-size:10px;color:var(--mut);">Known:</span>
+                      ${knownPeople.slice(0, 8).map((p) => `
+                        <button type="button" class="quick-chip" data-fill-person="${escapeHtml(p)}">${escapeHtml(p)}</button>
+                      `).join('')}
+                    </div>
+                  ` : ''}
                 </div>
               </div>
             ` : ''}
@@ -1172,6 +1226,15 @@ export function initApp(rootElement) {
               <label>Initial Funded Amount (₹)</label>
               <input id="nb-amt" type="number" step="any" value="0" required>
             </div>
+            <div>
+              <label>Funded from Physical Pool</label>
+              <select id="nb-pool">
+                ${pools.filter((p) => !p.isArchived).map((p) => {
+                  const bal = core.poolBalances.find((cb) => cb.id === p.id)?.balance || 0;
+                  return `<option value="${p.id}">${escapeHtml(p.name)} (${formatINR(bal)})</option>`;
+                }).join('')}
+              </select>
+            </div>
           </div>
 
           <!-- Daily Rolling Budget Range Configuration -->
@@ -1222,14 +1285,22 @@ export function initApp(rootElement) {
             <div>
               <label>Role</label>
               <select id="mo-role">
-                <option value="bill">Recurring Fixed Bill (Rent, Electricity)</option>
-                <option value="debt">Debt (You owe someone)</option>
-                <option value="receivable">Loan / Receivable (Someone owes you)</option>
+                <option value="bill" ${state.modalData?.role === 'bill' ? 'selected' : ''}>Recurring Fixed Bill (Rent, Electricity)</option>
+                <option value="debt" ${(state.modalData?.role || 'debt') === 'debt' ? 'selected' : ''}>Debt (You owe someone)</option>
+                <option value="receivable" ${state.modalData?.role === 'receivable' ? 'selected' : ''}>Loan / Receivable (Someone owes you)</option>
               </select>
             </div>
             <div>
               <label>Counterparty / Provider</label>
-              <input id="mo-person" type="text" placeholder="e.g. Landlord, Bob" required autofocus>
+              <input id="mo-person" type="text" list="known-people-list" placeholder="e.g. Landlord, Bob" value="${escapeHtml(state.modalData?.person || '')}" required autofocus>
+              ${knownPeople.length > 0 ? `
+                <div style="display:flex;flex-wrap:wrap;gap:4px;margin-top:6px;align-items:center;">
+                  <span style="font-size:10px;color:var(--mut);">Known:</span>
+                  ${knownPeople.slice(0, 8).map((p) => `
+                    <button type="button" class="quick-chip" data-fill-person="${escapeHtml(p)}">${escapeHtml(p)}</button>
+                  `).join('')}
+                </div>
+              ` : ''}
             </div>
           </div>
           <div class="form-row">
@@ -1386,6 +1457,9 @@ export function initApp(rootElement) {
       <div class="modal-overlay" id="modal-backdrop">
         <div class="modal-content" onclick="event.stopPropagation();">
           ${content}
+          <datalist id="known-people-list">
+            ${knownPeople.map((p) => `<option value="${escapeHtml(p)}"></option>`).join('')}
+          </datalist>
         </div>
       </div>
     `;
@@ -1425,6 +1499,29 @@ export function initApp(rootElement) {
         state.activeModal = 'repay';
         state.modalData = { person: e.currentTarget.getAttribute('data-person') };
         render();
+      });
+    });
+
+    rootElement.querySelectorAll('[data-action="open-person-obligation"]').forEach((btn) => {
+      btn.addEventListener('click', (e) => {
+        state.activeModal = 'new-obligation';
+        state.modalData = { person: e.currentTarget.getAttribute('data-person'), role: 'debt' };
+        render();
+      });
+    });
+
+    rootElement.querySelectorAll('[data-fill-person]').forEach((btn) => {
+      btn.addEventListener('click', (e) => {
+        e.preventDefault();
+        const pName = e.currentTarget.getAttribute('data-fill-person');
+        if (!pName) return;
+        const target = rootElement.querySelector('#mo-person') ||
+                       rootElement.querySelector('#qa-person') ||
+                       rootElement.querySelector('#edit-rec-counterparty');
+        if (target) {
+          target.value = pName;
+          target.focus();
+        }
       });
     });
 
@@ -1673,6 +1770,13 @@ export function initApp(rootElement) {
           data.budgetId = budgetSelect.value || null;
           if (!data.budgetId) data.isDirect = true;
           else delete data.isDirect;
+        }
+
+        const budgetPoolSelect = rootElement.querySelector('#edit-rec-budget-pool');
+        if (budgetPoolSelect) {
+          const chosenPool = budgetPoolSelect.value;
+          const amt = Number(data.amount) || 0;
+          data.funding = [{ poolId: chosenPool, amount: amt }];
         }
 
         const startInput = rootElement.querySelector('#edit-rec-start');
@@ -1933,7 +2037,7 @@ export function initApp(rootElement) {
         const kind = rootElement.querySelector('#nb-kind').value;
         const amt = Number(rootElement.querySelector('#nb-amt').value) || 0;
         const hardCap = rootElement.querySelector('#nb-hardcap').checked;
-        const firstPoolId = derived.pools[0]?.id || 'pool-bank';
+        const chosenPoolId = rootElement.querySelector('#nb-pool')?.value || derived.pools[0]?.id || 'pool-bank';
 
         if (kind === 'daily') {
           const start = nbStart?.value || todayISO();
@@ -1947,7 +2051,7 @@ export function initApp(rootElement) {
             days,
             start,
             endDate,
-            funding: [{ poolId: firstPoolId, amount: amt }],
+            funding: [{ poolId: chosenPoolId, amount: amt }],
             hardCap,
             refillMonthly: false,
             refillAmount: 0
@@ -1959,7 +2063,7 @@ export function initApp(rootElement) {
             amount: amt,
             days: 30,
             start: todayISO(),
-            funding: [{ poolId: firstPoolId, amount: amt }],
+            funding: [{ poolId: chosenPoolId, amount: amt }],
             hardCap,
             refillMonthly: false,
             refillAmount: 0

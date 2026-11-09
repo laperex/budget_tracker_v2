@@ -3,7 +3,8 @@ import assert from 'node:assert/strict';
 import {
   calculateObligationState,
   groupObligationsByPerson,
-  advanceBillCycle
+  advanceBillCycle,
+  extractKnownPeople
 } from '../src/domain/obligations.mjs';
 
 test('obligations - partial repayment and settlement', () => {
@@ -101,3 +102,22 @@ test('obligations - undated / ignore day-dates interpersonal debts netting', () 
   assert.equal(bob.netBalance, -1000);
   assert.equal(bob.debts[0].ignoreDueDate, true);
 });
+
+test('obligations - extractKnownPeople scans unified records and extracts unique sorted names', () => {
+  const records = [
+    { type: 'obligation', data: { counterparty: 'Charlie', role: 'debt' } },
+    { type: 'loan-out', data: { counterparty: 'Alice', amount: 500 } },
+    { type: 'loan-in', data: { counterparty: 'Bob', amount: 300 } },
+    { type: 'repayment', data: { counterparty: 'Alice', amount: 200 } },
+    { type: 'obligation', data: { counterparty: '  bob  ', role: 'receivable' } },
+    { type: 'expense', data: { amount: 100, note: 'Coffee' } },
+    { type: 'obligation', data: { person: 'David', role: 'debt' } }
+  ];
+
+  const people = extractKnownPeople(records);
+  assert.ok(people.includes('Alice'));
+  assert.ok(people.includes('Charlie'));
+  assert.ok(people.includes('David'));
+  assert.ok(people.includes('bob') || people.includes('Bob'));
+});
+

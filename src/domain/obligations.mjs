@@ -114,3 +114,24 @@ export function advanceBillCycle(bill, asOfDate = todayISO()) {
     due: nextDate || bill.due
   };
 }
+
+/**
+ * Scans all records and returns a unique, sorted list of known counterparty names.
+ *
+ * @param {Array} records - All database records or entities
+ * @returns {string[]} - Array of unique trimmed names
+ */
+export function extractKnownPeople(records = []) {
+  const set = new Set();
+  for (const r of records) {
+    const d = r.data || r;
+    if (typeof d.counterparty === 'string' && d.counterparty.trim()) {
+      set.add(d.counterparty.trim());
+    }
+    if (typeof d.person === 'string' && d.person.trim()) {
+      set.add(d.person.trim());
+    }
+  }
+  return Array.from(set).sort((a, b) => a.localeCompare(b, undefined, { sensitivity: 'base' }));
+}
+
