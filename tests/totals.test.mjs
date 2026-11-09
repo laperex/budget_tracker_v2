@@ -144,3 +144,64 @@ test('totals - overspending beyond funded reduces Unallocated one-for-one (floor
   assert.equal(after.committed, 0);
   assert.equal(after.unallocated, 3800);
 });
+
+test('totals - direct pool spends deduct from pool and unallocated without touching budgets', () => {
+  const pools = [{ id: 'bank', name: 'Bank Account', opening: 10000 }];
+  const budgets = [
+    {
+      id: 'daily',
+      name: 'Daily Food',
+      kind: 'daily',
+      amount: 6000,
+      days: 30,
+      start: '2026-11-01',
+      funding: [{ poolId: 'bank', amount: 6000 }]
+    }
+  ];
+
+  // Initial state: Total = 10,000, Daily Budget Committed = 6,000, Unallocated = 4,000
+  const initial = calculateCoreNumbers({
+    pools,
+    budgets,
+    obligations: [],
+    ledgerEntries: [],
+    asOfDate: '2026-11-01'
+  });
+  assert.equal(initial.totalAvailable, 10000);
+  assert.equal(initial.committed, 6000);
+  assert.equal(initial.unallocated, 4000);
+
+  // Direct spend of 1,500 from Bank (e.g. rare laptop repair, no budgetId)
+  const ledger = [
+    {
+      id: 'e-direct-1',
+      date: '2026-11-01',
+      type: 'expense',
+      amount: 1500,
+      poolId: 'bank',
+      budgetId: null,
+      note: 'Laptop repair'
+    }
+  ];
+
+  const afterDirect = calculateCoreNumbers({
+    pools,
+    budgets,
+    obligations: [],
+    ledgerEntries: ledger,
+    asOfDate: '2026-11-01'
+  });
+
+  // 1. Bank balance reduced by 1,500 -> 8,500
+  assert.equal(afterDirect.totalAvailable, 8500);
+  assert.equal(afterDirect.poolBalances.find((p) => p.id === 'bank').balance, 8500);
+
+  // 2. Budget committed is UNCHANGED -> 6,000
+  assert.equal(afterDirect.committed, 6000);
+  assert.equal(afterDirect.budgetDetails[0].fundedRemaining, 6000);
+  assert.equal(afterDirect.budgetDetails[0].state.spent, 0);
+  assert.equal(afterDirect.budgetDetails[0].state.currentAllowance, 200); // 6000 / 30 intact!
+
+  // 3. Unallocated cash reduced by exactly 1,500 -> 2,500
+  assert.equal(afterDirect.unallocated, 2500);
+});

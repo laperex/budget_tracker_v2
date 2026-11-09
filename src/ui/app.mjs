@@ -300,11 +300,16 @@ export function initApp(rootElement) {
                 ${transactions.slice(-15).reverse().map((e) => `
                   <tr>
                     <td>${shortDate(e.date)}</td>
-                    <td><span class="badge ${e.type === 'income' ? 'green' : e.type === 'expense' ? 'red' : 'yellow'}">${e.type}</span></td>
-                    <td style="max-width:260px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;">
-                      ${e.note || e.source || '—'}
+                    <td>
+                      <span class="badge ${e.type === 'income' ? 'green' : e.type === 'expense' ? (!e.budgetId ? 'warn' : 'red') : 'yellow'}">
+                        ${e.type === 'expense' && !e.budgetId ? 'DIRECT' : e.type}
+                      </span>
                     </td>
-                    <td style="text-align:right;font-weight:700;color:${e.type === 'income' ? 'var(--acc)' : 'var(--fg)'};">
+                    <td style="max-width:260px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;">
+                      <div>${e.note || e.source || '—'}</div>
+                      ${e.type === 'expense' && !e.budgetId ? `<span style="font-size:10px;color:var(--peach);">⚡ Direct Pool Spend</span>` : ''}
+                    </td>
+                    <td style="text-align:right;font-weight:700;color:${e.type === 'income' ? 'var(--acc)' : e.type === 'expense' && !e.budgetId ? 'var(--peach)' : 'var(--fg)'};">
                       ${formatINR(e.amount)}
                     </td>
                     <td style="text-align:center;">
@@ -622,6 +627,7 @@ export function initApp(rootElement) {
   // TAB 6: LOG (The Universal Unified Record Stream)
   // -------------------------------------------------------------
   function renderLogTab(derived, core) {
+    const { pools = [], budgets = [] } = derived;
     const filter = state.logFilter;
     const search = (state.logSearch || '').toLowerCase().trim();
 
@@ -695,36 +701,100 @@ export function initApp(rootElement) {
         <div class="record-list">
           ${filtered.map((r) => {
             const d = r.data || {};
-            let details = '';
+            const poolName = pools.find((p) => p.id === d.poolId)?.name || 'Physical Pool';
+            const budgetName = budgets.find((b) => b.id === d.budgetId)?.name || null;
+            const toPoolName = pools.find((p) => p.id === d.toPoolId)?.name || 'Destination Pool';
+
+            let pillHtml = `<span class="record-type-pill">${r.type}</span>`;
+            let cardClass = `record-card type-${r.type}`;
+            let mainHtml = '';
+            let subHtml = `ID: ${r.id.slice(0, 8)}`;
+
             if (r.type === 'expense') {
-              details = `Amount: ${formatINR(d.amount)} | ${d.note || 'Expense'}`;
+              if (!d.budgetId) {
+                cardClass = `record-card type-expense type-direct-expense`;
+                pillHtml = `<span class="record-type-pill pill-direct">⚡ DIRECT SPEND</span>`;
+                mainHtml = `<strong style="color:var(--peach);">${formatINR(d.amount)}</strong> — ${d.note || 'Direct Pool Spend'}`;
+                subHtml = `Direct from: ${poolName} • (Unallocated / One-Off) • ID: ${r.id.slice(0, 8)}`;
+              } else {
+                cardClass = `record-card type-expense`;
+                pillHtml = `<span class="record-type-pill">EXPENSE</span>`;
+                mainHtml = `<strong style="color:var(--bad);">${formatINR(d.amount)}</strong> — ${d.note || 'Expense'}`;
+                subHtml = `Pool: ${poolName}${budgetName ? ' • Budget: ' + budgetName : ''} • ID: ${r.id.slice(0, 8)}`;
+              }
             } else if (r.type === 'income') {
-              details = `Amount: +${formatINR(d.amount)} | ${d.source || d.note || 'Income'}`;
+              cardClass = `record-card type-income`;
+              pillHtml = `<span class="record-type-pill">INCOME</span>`;
+              mainHtml = `<strong style="color:var(--acc);">+${formatINR(d.amount)}</strong> — ${d.source || d.note || 'Income'}`;
+              subHtml = `Deposited to: ${poolName} • ID: ${r.id.slice(0, 8)}`;
             } else if (r.type === 'transfer') {
-              details = `Amount: ${formatINR(d.amount)} | ${d.note || 'Transfer'}`;
+              cardClass = `record-card type-transfer`;
+              pillHtml = `<span class="record-type-pill">TRANSFER</span>`;
+              mainHtml = `<strong style="color:var(--yellow);">${formatINR(d.amount)}</strong> — ${d.note || 'Transfer'}`;
+              subHtml = `${poolName} → ${toPoolName} • ID: ${r.id.slice(0, 8)}`;
+            } else if (r.type === 'loan_out' || r.type === 'loan-out') {
+              cardClass = `record-card type-loan-out`;
+              pillHtml = `<span class="record-type-pill">LOAN OUT</span>`;
+              mainHtml = `<strong style="color:var(--bad);">${formatINR(d.amount)}</strong> — Lent to ${d.counterparty || 'Friend'}${d.note ? ' • ' + d.note : ''}`;
+              subHtml = `From: ${poolName} • ID: ${r.id.slice(0, 8)}`;
+            } else if (r.type === 'loan_in' || r.type === 'loan-in') {
+              cardClass = `record-card type-loan-in`;
+              pillHtml = `<span class="record-type-pill">LOAN IN</span>`;
+              mainHtml = `<strong style="color:var(--acc);">+${formatINR(d.amount)}</strong> — Borrowed from ${d.counterparty || 'Friend'}${d.note ? ' • ' + d.note : ''}`;
+              subHtml = `Into: ${poolName} • ID: ${r.id.slice(0, 8)}`;
+            } else if (r.type === 'repayment') {
+              cardClass = `record-card type-repayment`;
+              pillHtml = `<span class="record-type-pill">REPAYMENT</span>`;
+              mainHtml = `<strong style="color:var(--acc);">${formatINR(d.amount)}</strong> — ${d.note || 'Settlement'}`;
+              subHtml = `Pool: ${poolName} • Direction: ${d.direction || 'in'} • ID: ${r.id.slice(0, 8)}`;
             } else if (r.type === 'pool') {
-              details = `Pool "${d.name}" (${d.poolType || d.type || 'bank'}) | Opening: ${formatINR(d.opening || 0)}`;
+              cardClass = `record-card type-pool`;
+              pillHtml = `<span class="record-type-pill">POOL</span>`;
+              mainHtml = `Pool "${d.name}" (${d.poolType || d.type || 'bank'})`;
+              subHtml = `Opening: ${formatINR(d.opening || 0)}${d.isArchived ? ' • (Archived)' : ''} • ID: ${r.id.slice(0, 8)}`;
             } else if (r.type === 'budget') {
-              details = `Budget "${d.name}" (${d.kind || 'envelope'}) | ${d.amount ? formatINR(d.amount) : 'Envelope'}`;
+              cardClass = `record-card type-budget`;
+              pillHtml = `<span class="record-type-pill">BUDGET</span>`;
+              mainHtml = `Budget "${d.name}" (${d.kind || 'envelope'})${d.amount ? ' • ' + formatINR(d.amount) : ''}`;
+              subHtml = `${d.kind === 'daily' && d.start && d.endDate ? `📅 ${shortDate(d.start)} → ${shortDate(d.endDate)} (${d.days}d) • ` : ''}${d.hardCap ? 'Hard Cap • ' : ''}ID: ${r.id.slice(0, 8)}`;
             } else if (r.type === 'obligation') {
-              details = `Obligation "${d.counterparty}" (${d.role}) | Principal: ${formatINR(d.principal)}`;
+              cardClass = `record-card type-obligation`;
+              pillHtml = `<span class="record-type-pill">OBLIGATION</span>`;
+              mainHtml = `Obligation "${d.counterparty}" (${d.role}) • Principal: ${formatINR(d.principal)}`;
+              subHtml = `Status: ${d.status || 'confirmed'}${d.due ? ' • Due: ' + d.due : ''}${d.note ? ' • ' + d.note : ''} • ID: ${r.id.slice(0, 8)}`;
             } else if (r.type === 'expected-income') {
-              details = `Expected Income "${d.source}" | ${formatINR(d.amount)}`;
+              cardClass = `record-card type-expected-income`;
+              pillHtml = `<span class="record-type-pill">EXPECTED</span>`;
+              mainHtml = `Expected Income "${d.source}" • +${formatINR(d.amount)}`;
+              subHtml = `${d.due ? 'Due: ' + d.due + ' • ' : ''}ID: ${r.id.slice(0, 8)}`;
             } else if (r.type === 'config') {
-              details = `System Config | Cycle Start Day: ${d.cycleStartDay || 1}`;
+              cardClass = `record-card type-config`;
+              pillHtml = `<span class="record-type-pill">CONFIG</span>`;
+              mainHtml = `System Configuration`;
+              subHtml = `Cycle Start Day: ${d.cycleStartDay || 1} • ID: ${r.id.slice(0, 8)}`;
+            } else if (r.type === 'adjustment') {
+              cardClass = `record-card type-adjustment`;
+              pillHtml = `<span class="record-type-pill">ADJUSTMENT</span>`;
+              mainHtml = `Target Balance: ${formatINR(d.targetBalance || 0)} — ${d.note || 'Audit Adjustment'}`;
+              subHtml = `Pool: ${poolName} • ID: ${r.id.slice(0, 8)}`;
+            } else if (r.type === 'allocation') {
+              cardClass = `record-card type-allocation`;
+              pillHtml = `<span class="record-type-pill">ALLOCATION</span>`;
+              mainHtml = `Allocation: ${formatINR(d.amount)} — ${d.note || 'Budget Allocation'}`;
+              subHtml = `ID: ${r.id.slice(0, 8)}`;
             } else {
-              details = JSON.stringify(d);
+              mainHtml = JSON.stringify(d);
             }
 
             return `
-              <div class="record-card type-${r.type}">
+              <div class="${cardClass}">
                 <div class="record-meta">
                   <span class="record-date">${shortDate(r.date)}</span>
-                  <span class="record-type-pill">${r.type}</span>
+                  ${pillHtml}
                 </div>
                 <div class="record-body">
-                  <span class="record-main">${details}</span>
-                  <span class="record-sub">ID: ${r.id.slice(0, 8)}</span>
+                  <span class="record-main">${mainHtml}</span>
+                  <span class="record-sub">${subHtml}</span>
                 </div>
                 <div class="record-actions">
                   <button class="btn-icon" data-action="edit-record" data-id="${r.id}" title="Edit Record">✏️</button>
@@ -755,7 +825,8 @@ export function initApp(rootElement) {
             <div>
               <label>Transaction Type</label>
               <select id="qa-type">
-                <option value="expense">Expense (Spend)</option>
+                <option value="expense">Expense (Spend from Budget)</option>
+                <option value="direct_expense">Direct Spend (One-Off / Unallocated)</option>
                 <option value="income">Income (Deposit)</option>
                 <option value="transfer">Transfer between Pools</option>
                 <option value="loan_out">Loan Given (They owe you)</option>
@@ -772,9 +843,15 @@ export function initApp(rootElement) {
             <div>
               <label>Charge to Budget / Envelope</label>
               <select id="qa-budget">
+                <option value="">⚡ Direct from Pool (No Budget / One-Off)</option>
+                <option disabled>──────── Budgets & Envelopes ────────</option>
                 ${budgets.map((b) => `<option value="${b.id}">${b.name} (${b.kind})</option>`).join('')}
               </select>
             </div>
+          </div>
+
+          <div id="qa-direct-hint" style="display:none;background:rgba(250, 179, 135, 0.08);border:1px solid var(--peach);padding:8px 10px;margin-bottom:12px;font-size:11px;color:var(--peach);font-family:var(--font-mono);">
+            ⚡ Deducted directly from physical pool and unallocated cash. Does not consume from daily rolling budget or envelopes.
           </div>
 
           <div class="form-row">
@@ -914,13 +991,14 @@ export function initApp(rootElement) {
               </div>
             ` : ''}
 
-            ${'budgetId' in d ? `
+            ${(rec.type === 'expense' || 'budgetId' in d) ? `
               <div class="form-row">
                 <div>
                   <label>Budget / Envelope</label>
                   <select id="edit-rec-budget">
-                    <option value="">(None)</option>
-                    ${budgets.map((b) => `<option value="${b.id}" ${d.budgetId === b.id ? 'selected' : ''}>${b.name}</option>`).join('')}
+                    <option value="" ${!d.budgetId ? 'selected' : ''}>⚡ (None - Direct Pool Spend / One-Off)</option>
+                    <option disabled>──────── Budgets & Envelopes ────────</option>
+                    ${budgets.map((b) => `<option value="${b.id}" ${d.budgetId === b.id ? 'selected' : ''}>${b.name} (${b.kind})</option>`).join('')}
                   </select>
                 </div>
               </div>
@@ -1551,7 +1629,11 @@ export function initApp(rootElement) {
         if (toPoolSelect) data.toPoolId = toPoolSelect.value;
 
         const budgetSelect = rootElement.querySelector('#edit-rec-budget');
-        if (budgetSelect) data.budgetId = budgetSelect.value || null;
+        if (budgetSelect) {
+          data.budgetId = budgetSelect.value || null;
+          if (!data.budgetId) data.isDirect = true;
+          else delete data.isDirect;
+        }
 
         const startInput = rootElement.querySelector('#edit-rec-start');
         const endInput = rootElement.querySelector('#edit-rec-end');
@@ -1595,15 +1677,28 @@ export function initApp(rootElement) {
     if (qaForm) {
       const qaType = rootElement.querySelector('#qa-type');
       const budgetRow = rootElement.querySelector('#qa-budget-row');
+      const qaBudget = rootElement.querySelector('#qa-budget');
+      const directHint = rootElement.querySelector('#qa-direct-hint');
       const toPoolCol = rootElement.querySelector('#qa-to-pool-col');
       const counterpartyRow = rootElement.querySelector('#qa-counterparty-row');
+
+      const updateDirectHint = () => {
+        const t = qaType.value;
+        const isDirect = t === 'direct_expense' || (t === 'expense' && (!qaBudget || !qaBudget.value));
+        if (directHint) directHint.style.display = isDirect ? 'block' : 'none';
+      };
 
       qaType.addEventListener('change', () => {
         const t = qaType.value;
         budgetRow.style.display = t === 'expense' ? 'flex' : 'none';
         toPoolCol.style.display = t === 'transfer' ? 'block' : 'none';
         counterpartyRow.style.display = (t === 'loan_in' || t === 'loan_out') ? 'flex' : 'none';
+        updateDirectHint();
       });
+
+      if (qaBudget) {
+        qaBudget.addEventListener('change', updateDirectHint);
+      }
 
       qaForm.addEventListener('submit', (e) => {
         e.preventDefault();
@@ -1619,9 +1714,9 @@ export function initApp(rootElement) {
           return;
         }
 
-        if (type === 'expense') {
-          const budgetId = rootElement.querySelector('#qa-budget').value;
-          const budget = derived.budgets.find((b) => b.id === budgetId);
+        if (type === 'expense' || type === 'direct_expense') {
+          const budgetId = (type === 'direct_expense') ? null : (rootElement.querySelector('#qa-budget')?.value || null);
+          const budget = budgetId ? derived.budgets.find((b) => b.id === budgetId) : null;
           if (budget) {
             const check = validateExpenseAdd(budget, amt, derived.transactions);
             if (!check.allowed) {
@@ -1629,7 +1724,13 @@ export function initApp(rootElement) {
               return;
             }
           }
-          state.records.push(createRecord('expense', date, { amount: amt, poolId, budgetId, note }));
+          state.records.push(createRecord('expense', date, {
+            amount: amt,
+            poolId,
+            budgetId: budgetId || null,
+            note: note || (budgetId ? 'Expense' : 'Direct Pool Spend'),
+            isDirect: !budgetId
+          }));
         } else if (type === 'income') {
           state.records.push(createRecord('income', date, { amount: amt, poolId, source: note || 'Income', note }));
         } else if (type === 'transfer') {
