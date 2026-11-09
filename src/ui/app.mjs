@@ -1,4 +1,13 @@
-import { todayISO, shortDate, formatINR, addDays, getCycleEnd } from '../domain/dateUtils.mjs';
+import {
+  todayISO,
+  shortDate,
+  formatINR,
+  addDays,
+  getCycleEnd,
+  getMonthEnd,
+  getCycleRange,
+  dayDiff
+} from '../domain/dateUtils.mjs';
 import {
   createRecord,
   editRecord,
@@ -229,11 +238,22 @@ export function initApp(rootElement) {
       <!-- Active Rolling Daily Allowance -->
       ${budgets.filter((b) => b.kind === 'daily').map((b) => {
         const d = calcDailyBudget(b, transactions, today);
+        const statusText = d.state === 'pre'
+          ? `Starts in ${Math.abs(d.di)}d`
+          : d.state === 'done'
+          ? `Cycle Completed`
+          : `Day ${d.di + 1} of ${d.N} (${d.daysLeft}d left)`;
+
         return `
           <section class="card highlight">
             <div class="card-title">
-              <span>Daily Rolling Allowance: ${b.name}</span>
-              <span class="badge ${d.leftToday < 0 ? 'red' : 'green'}">Day ${d.di + 1} of ${d.N}</span>
+              <div>
+                <span style="font-weight:700;">${b.name}</span>
+                <span class="mono" style="font-size:11px;color:var(--mut);margin-left:8px;">
+                  📅 ${shortDate(d.start)} → ${shortDate(d.endDate)} (${d.N}d)
+                </span>
+              </div>
+              <span class="badge ${d.state === 'done' ? 'gray' : d.leftToday < 0 ? 'red' : 'green'}">${statusText}</span>
             </div>
             <div class="hero-grid" style="margin-bottom:12px;">
               <div>
@@ -249,7 +269,7 @@ export function initApp(rootElement) {
               <div>
                 <div class="kpi-lbl">Left Today</div>
                 <div class="kpi-val ${d.leftToday < 0 ? 'bad' : 'good'}">${formatINR(d.leftToday)}</div>
-                <div class="kpi-sub">Remaining cycle: ${formatINR(d.left)}</div>
+                <div class="kpi-sub">Remaining balance: ${formatINR(d.left)}</div>
               </div>
             </div>
           </section>
@@ -328,7 +348,10 @@ export function initApp(rootElement) {
           return `
             <div class="card" style="margin:0;">
               <div class="card-title">
-                <span>${b.name}</span>
+                <div>
+                  <strong>${b.name}</strong>
+                  <div class="mono" style="font-size:10px;color:var(--mut);">📅 ${shortDate(d.start)} → ${shortDate(d.endDate)} (${d.N}d)</div>
+                </div>
                 <div class="action-btn-group">
                   <button class="btn-icon" data-action="edit-record" data-id="${b.id}" title="Edit Budget">✏️</button>
                   <button class="btn-icon btn-delete" data-action="del-record" data-id="${b.id}" title="Delete Budget">&times;</button>
@@ -336,14 +359,14 @@ export function initApp(rootElement) {
               </div>
               <div style="display:flex;justify-content:space-between;margin-bottom:8px;">
                 <span class="mono">Allowance Today: <strong style="color:var(--acc);">${formatINR(d.currentAllowance)}</strong></span>
-                <span class="mono">Cycle Left: <strong>${formatINR(d.left)}</strong></span>
+                <span class="mono">Remaining: <strong>${formatINR(d.left)}</strong></span>
               </div>
               <div class="bar-track">
                 <div class="bar-fill" style="width:${Math.min(100, (d.spent / d.B) * 100)}%;"></div>
               </div>
               <div style="display:flex;justify-content:space-between;font-size:11px;color:var(--mut);margin-top:4px;">
-                <span>Spent: ${formatINR(d.spent)}</span>
-                <span>Budget: ${formatINR(d.B)}</span>
+                <span>Spent: ${formatINR(d.spent)} (${Math.round((d.spent / d.B) * 100 || 0)}%)</span>
+                <span>Day ${d.di + 1} of ${d.N}</span>
               </div>
             </div>
           `;
@@ -903,6 +926,19 @@ export function initApp(rootElement) {
               </div>
             ` : ''}
 
+            ${rec.type === 'budget' && d.kind === 'daily' ? `
+              <div class="form-row">
+                <div>
+                  <label>From Date (Start)</label>
+                  <input type="date" id="edit-rec-start" value="${d.start || rec.date}">
+                </div>
+                <div>
+                  <label>To Date (End)</label>
+                  <input type="date" id="edit-rec-end" value="${d.endDate || addDays(d.start || rec.date, (d.days || 30) - 1)}">
+                </div>
+              </div>
+            ` : ''}
+
             ${'name' in d ? `
               <div class="form-row">
                 <div>
@@ -996,6 +1032,10 @@ export function initApp(rootElement) {
         </form>
       `;
     } else if (modalName === 'new-budget') {
+      const today = todayISO();
+      const monthEnd = getMonthEnd(today);
+      const initialDays = Math.max(1, dayDiff(today, monthEnd) + 1);
+
       content = `
         <div class="modal-header">
           <h3 class="modal-title">Create Budget or Envelope</h3>
@@ -1005,13 +1045,13 @@ export function initApp(rootElement) {
           <div class="form-row">
             <div>
               <label>Budget Name</label>
-              <input id="nb-name" type="text" placeholder="e.g. Groceries, Fuel" required autofocus>
+              <input id="nb-name" type="text" placeholder="e.g. Groceries, Trip to Goa, Fuel" required autofocus>
             </div>
             <div>
               <label>Kind</label>
               <select id="nb-kind">
+                <option value="daily" selected>Daily Rolling Budget</option>
                 <option value="envelope">Envelope (Undated)</option>
-                <option value="daily">Daily Rolling Budget</option>
               </select>
             </div>
           </div>
@@ -1021,6 +1061,35 @@ export function initApp(rootElement) {
               <input id="nb-amt" type="number" step="any" value="0" required>
             </div>
           </div>
+
+          <!-- Daily Rolling Budget Range Configuration -->
+          <div id="nb-daily-row" style="background:var(--card);border:1px solid var(--line);padding:10px;margin-bottom:12px;">
+            <label style="color:var(--acc);font-weight:700;display:block;margin-bottom:6px;">Timeframe Presets</label>
+            <div class="horizon-toggle-bar" style="margin-bottom:10px;display:flex;flex-wrap:wrap;gap:4px;">
+              <button type="button" class="horizon-btn" data-nb-preset="month">This Month</button>
+              <button type="button" class="horizon-btn" data-nb-preset="cycle">Payday Cycle</button>
+              <button type="button" class="horizon-btn" data-nb-preset="7d">1 Week (7d)</button>
+              <button type="button" class="horizon-btn" data-nb-preset="14d">2 Weeks (14d)</button>
+              <button type="button" class="horizon-btn" data-nb-preset="30d">30 Days</button>
+              <button type="button" class="horizon-btn" data-nb-preset="custom">Custom Range</button>
+            </div>
+
+            <div class="grid-2">
+              <div>
+                <label>From Date (Start)</label>
+                <input type="date" id="nb-start" value="${today}">
+              </div>
+              <div>
+                <label>To Date (End)</label>
+                <input type="date" id="nb-end" value="${monthEnd}">
+              </div>
+            </div>
+
+            <div id="nb-duration-badge" class="mono" style="font-size:11px;color:var(--acc);margin-top:8px;">
+              Duration: ${initialDays} days
+            </div>
+          </div>
+
           <div class="form-row" id="nb-cap-row">
             <label style="display:flex;align-items:center;gap:6px;cursor:pointer;">
               <input type="checkbox" id="nb-hardcap">
@@ -1458,7 +1527,7 @@ export function initApp(rootElement) {
       editForm.addEventListener('submit', (e) => {
         e.preventDefault();
         const id = rootElement.querySelector('#edit-rec-id').value;
-        const date = rootElement.querySelector('#edit-rec-date').value;
+        let date = rootElement.querySelector('#edit-rec-date').value;
         const jsonArea = rootElement.querySelector('#edit-rec-json');
 
         let data = {};
@@ -1483,6 +1552,17 @@ export function initApp(rootElement) {
 
         const budgetSelect = rootElement.querySelector('#edit-rec-budget');
         if (budgetSelect) data.budgetId = budgetSelect.value || null;
+
+        const startInput = rootElement.querySelector('#edit-rec-start');
+        const endInput = rootElement.querySelector('#edit-rec-end');
+        if (startInput && endInput) {
+          const sVal = startInput.value;
+          const eVal = endInput.value;
+          data.start = sVal;
+          data.endDate = eVal;
+          data.days = Math.max(1, dayDiff(sVal, eVal) + 1);
+          date = sVal;
+        }
 
         const nameInput = rootElement.querySelector('#edit-rec-name');
         if (nameInput) data.name = nameInput.value.trim();
@@ -1618,6 +1698,69 @@ export function initApp(rootElement) {
     // Form: Create Budget
     const mBudgetForm = rootElement.querySelector('#modal-form-new-budget');
     if (mBudgetForm) {
+      const nbKind = rootElement.querySelector('#nb-kind');
+      const nbDailyRow = rootElement.querySelector('#nb-daily-row');
+      const nbStart = rootElement.querySelector('#nb-start');
+      const nbEnd = rootElement.querySelector('#nb-end');
+      const nbAmt = rootElement.querySelector('#nb-amt');
+      const nbBadge = rootElement.querySelector('#nb-duration-badge');
+
+      const updateNbDuration = () => {
+        if (!nbStart || !nbEnd || !nbBadge) return;
+        const s = nbStart.value || todayISO();
+        const e = nbEnd.value || s;
+        const diff = Math.max(1, dayDiff(s, e) + 1);
+        const amt = Number(nbAmt?.value) || 0;
+        const perDay = amt > 0 ? (amt / diff).toFixed(0) : 0;
+        nbBadge.textContent = `Duration: ${diff} days • Base pace: ₹${perDay} / day`;
+      };
+
+      if (nbKind && nbDailyRow) {
+        nbKind.addEventListener('change', () => {
+          nbDailyRow.style.display = nbKind.value === 'daily' ? 'block' : 'none';
+          updateNbDuration();
+        });
+      }
+
+      if (nbStart) nbStart.addEventListener('input', updateNbDuration);
+      if (nbEnd) nbEnd.addEventListener('input', updateNbDuration);
+      if (nbAmt) nbAmt.addEventListener('input', updateNbDuration);
+
+      rootElement.querySelectorAll('[data-nb-preset]').forEach((btn) => {
+        btn.addEventListener('click', (e) => {
+          const preset = e.currentTarget.getAttribute('data-nb-preset');
+          const today = todayISO();
+          rootElement.querySelectorAll('[data-nb-preset]').forEach((b) => b.classList.remove('active'));
+          e.currentTarget.classList.add('active');
+
+          if (preset === 'month') {
+            const mStart = today.slice(0, 8) + '01';
+            const mEnd = getMonthEnd(today);
+            if (nbStart) nbStart.value = mStart;
+            if (nbEnd) nbEnd.value = mEnd;
+          } else if (preset === 'cycle') {
+            const cycle = getCycleRange(today, derived.config?.cycleStartDay || 1);
+            if (nbStart) nbStart.value = cycle.start;
+            if (nbEnd) nbEnd.value = cycle.endDate;
+          } else if (preset === '7d') {
+            if (nbStart) nbStart.value = today;
+            if (nbEnd) nbEnd.value = addDays(today, 6);
+          } else if (preset === '14d') {
+            if (nbStart) nbStart.value = today;
+            if (nbEnd) nbEnd.value = addDays(today, 13);
+          } else if (preset === '30d') {
+            if (nbStart) nbStart.value = today;
+            if (nbEnd) nbEnd.value = addDays(today, 29);
+          } else if (preset === 'custom') {
+            if (nbEnd) nbEnd.focus();
+          }
+          updateNbDuration();
+        });
+      });
+
+      // Initial update of badge on modal render
+      updateNbDuration();
+
       mBudgetForm.addEventListener('submit', (e) => {
         e.preventDefault();
         const name = rootElement.querySelector('#nb-name').value.trim();
@@ -1626,17 +1769,36 @@ export function initApp(rootElement) {
         const hardCap = rootElement.querySelector('#nb-hardcap').checked;
         const firstPoolId = derived.pools[0]?.id || 'pool-bank';
 
-        state.records.push(createRecord('budget', todayISO(), {
-          name,
-          kind,
-          amount: amt,
-          days: 30,
-          start: todayISO(),
-          funding: [{ poolId: firstPoolId, amount: amt }],
-          hardCap,
-          refillMonthly: false,
-          refillAmount: 0
-        }));
+        if (kind === 'daily') {
+          const start = nbStart?.value || todayISO();
+          const endDate = nbEnd?.value || start;
+          const days = Math.max(1, dayDiff(start, endDate) + 1);
+
+          state.records.push(createRecord('budget', start, {
+            name,
+            kind: 'daily',
+            amount: amt,
+            days,
+            start,
+            endDate,
+            funding: [{ poolId: firstPoolId, amount: amt }],
+            hardCap,
+            refillMonthly: false,
+            refillAmount: 0
+          }));
+        } else {
+          state.records.push(createRecord('budget', todayISO(), {
+            name,
+            kind: 'envelope',
+            amount: amt,
+            days: 30,
+            start: todayISO(),
+            funding: [{ poolId: firstPoolId, amount: amt }],
+            hardCap,
+            refillMonthly: false,
+            refillAmount: 0
+          }));
+        }
 
         state.activeModal = null;
         save();

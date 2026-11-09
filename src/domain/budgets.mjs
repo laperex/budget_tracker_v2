@@ -1,9 +1,10 @@
-import { dayNumber, addDays, todayISO } from './dateUtils.mjs';
+import { dayNumber, addDays, dayDiff, todayISO } from './dateUtils.mjs';
 import { aggregateBudgetSpends, aggregateAllocations } from './ledger.mjs';
 
 /**
  * Calculates rolling daily allowance for a 'daily' budget.
- * Exact v1 parity:
+ * Supports arbitrary date ranges (start -> endDate) as well as fixed N days.
+ * Exact formula:
  * allowance_i = (B − spent_before_i) / (N − i)
  * left_i = allowance_i − spent_i
  *
@@ -12,9 +13,20 @@ import { aggregateBudgetSpends, aggregateAllocations } from './ledger.mjs';
  * @param {string} asOfDate - Target date (defaults to todayISO())
  */
 export function calcDailyBudget(b, ledgerEntries = [], asOfDate = todayISO()) {
-  const N = Math.max(1, Math.floor(Number(b.days) || 30));
+  const start = b.start || asOfDate;
+  let N;
+  let endDate;
+
+  if (b.endDate && b.start) {
+    N = Math.max(1, dayDiff(b.start, b.endDate) + 1);
+    endDate = b.endDate;
+  } else {
+    N = Math.max(1, Math.floor(Number(b.days) || 30));
+    endDate = addDays(start, N - 1);
+  }
+
   const B = Number(b.amount) || 0;
-  const s0 = dayNumber(b.start);
+  const s0 = dayNumber(start);
   const currentDayNum = dayNumber(asOfDate);
   const idx = currentDayNum - s0;
 
@@ -39,7 +51,7 @@ export function calcDailyBudget(b, ledgerEntries = [], asOfDate = todayISO()) {
     const al = (B - cum) / (N - i);
     rows.push({
       i,
-      date: addDays(b.start, i),
+      date: addDays(start, i),
       al,
       sp: sp[i],
       left: al - sp[i]
@@ -54,6 +66,8 @@ export function calcDailyBudget(b, ledgerEntries = [], asOfDate = todayISO()) {
   return {
     N,
     B,
+    start,
+    endDate,
     state,
     di,
     rows,

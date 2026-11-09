@@ -272,7 +272,14 @@ def audit():
         spent = budget_spends.get(bid, 0.0)
         if b.get('kind') == 'daily':
             # Daily rolling allowance
-            N = max(1, int(b.get('days', 30)))
+            start_str = b.get('start')
+            end_str = b.get('endDate')
+            if start_str and end_str:
+                start_d = parse_iso(start_str)
+                end_d = parse_iso(end_str)
+                N = max(1, (end_d - start_d).days + 1)
+            else:
+                N = max(1, int(b.get('days', 30)))
             B = float(b.get('amount', 0))
             left = B - spent
             funded_remaining = max(0.0, left)

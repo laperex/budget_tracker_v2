@@ -77,3 +77,29 @@ export const getCycleEnd = (todayStr, cycleDay = 1) => {
   }
   return formatDate(nextCycleDate);
 };
+
+/**
+ * Returns the last day of the calendar month for given YYYY-MM-DD (e.g. '2026-11-30')
+ */
+export const getMonthEnd = (dateStr) => {
+  const [y, m] = (dateStr || todayISO()).split('-').map(Number);
+  const last = new Date(y, m, 0);
+  return formatDate(last);
+};
+
+/**
+ * Returns { start, endDate } for the payday/billing cycle containing asOfDate
+ */
+export const getCycleRange = (asOfDate, cycleStartDay = 1) => {
+  const [y, m, d] = (asOfDate || todayISO()).split('-').map(Number);
+  const cycleDay = Math.max(1, Math.min(28, Number(cycleStartDay) || 1));
+  let startD, endD;
+  if (d >= cycleDay) {
+    startD = new Date(y, m - 1, cycleDay);
+    endD = new Date(y, m, cycleDay - 1);
+  } else {
+    startD = new Date(y, m - 2, cycleDay);
+    endD = new Date(y, m - 1, cycleDay - 1);
+  }
+  return { start: formatDate(startD), endDate: formatDate(endD) };
+};

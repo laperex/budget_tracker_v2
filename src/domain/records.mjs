@@ -1,3 +1,5 @@
+import { getMonthEnd, dayDiff } from './dateUtils.mjs';
+
 /**
  * Record schema, constants, and CRUD operations for Budget Tracker v3.
  * Everything in the system is stored as a flat array of records.
@@ -97,6 +99,8 @@ export function clearAllRecords() {
 export function createInitialSeedRecords() {
   const today = new Date().toISOString().slice(0, 10);
   const currentMonthStart = today.slice(0, 8) + '01';
+  const currentMonthEnd = getMonthEnd(currentMonthStart);
+  const currentMonthDays = Math.max(1, dayDiff(currentMonthStart, currentMonthEnd) + 1);
 
   return [
     createRecord('config', today, { cycleStartDay: 1 }, 'config-system'),
@@ -107,8 +111,9 @@ export function createInitialSeedRecords() {
       name: 'Daily Spending',
       kind: 'daily',
       amount: 6000,
-      days: 30,
+      days: currentMonthDays,
       start: currentMonthStart,
+      endDate: currentMonthEnd,
       funding: [{ poolId: 'pool-bank', amount: 6000 }]
     }, 'budget-daily'),
     createRecord('budget', currentMonthStart, {

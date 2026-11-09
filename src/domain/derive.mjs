@@ -4,7 +4,7 @@
  * All queries, summaries, balances, and analytics are functions over this state.
  */
 
-import { todayISO } from './dateUtils.mjs';
+import { todayISO, dayDiff, addDays } from './dateUtils.mjs';
 import { calculatePoolBalances, aggregateBudgetSpends, aggregateObligationPayments, aggregateAllocations } from './ledger.mjs';
 import { calculateCoreNumbers } from './totals.mjs';
 import { projectAtDate } from './projection.mjs';
@@ -42,13 +42,23 @@ export function deriveState(records = [], asOfDate = todayISO()) {
       }
 
       case 'budget': {
+        const start = data.start || r.date || asOfDate;
+        const endDate = data.endDate || data.end || null;
+        let days = Number(data.days);
+        if (endDate && start) {
+          days = Math.max(1, dayDiff(start, endDate) + 1);
+        } else if (!days || isNaN(days)) {
+          days = 30;
+        }
+
         budgets.push({
           id: r.id,
           name: data.name || 'Unnamed Budget',
           kind: data.kind || 'envelope',
           amount: Number(data.amount) || 0,
-          days: Number(data.days) || 30,
-          start: data.start || r.date || asOfDate,
+          days,
+          start,
+          endDate: endDate || addDays(start, days - 1),
           funding: Array.isArray(data.funding) ? [...data.funding] : [],
           hardCap: Boolean(data.hardCap),
           refillMonthly: Boolean(data.refillMonthly),
