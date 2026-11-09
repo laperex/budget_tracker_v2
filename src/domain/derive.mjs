@@ -75,6 +75,7 @@ export function deriveState(records = [], asOfDate = todayISO()) {
           direction: data.direction || 'pay',
           principal: Number(data.principal) || 0,
           due: data.due || null,
+          ignoreDueDate: Boolean(data.ignoreDueDate),
           status: data.status || 'confirmed',
           likelihood: typeof data.likelihood === 'number' ? data.likelihood : 100,
           recurrence: data.recurrence || null,

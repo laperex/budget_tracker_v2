@@ -205,3 +205,55 @@ test('totals - direct pool spends deduct from pool and unallocated without touch
   // 3. Unallocated cash reduced by exactly 1,500 -> 2,500
   assert.equal(afterDirect.unallocated, 2500);
 });
+
+test('totals - undated interpersonal debt (ignoreDueDate: true) preserves unallocated cash without false shortfall', () => {
+  const pools = [{ id: 'bank', name: 'Bank Account', opening: 10000 }];
+  const undatedDebt = [
+    {
+      id: 'ob-friend',
+      role: 'debt',
+      counterparty: 'Alice',
+      direction: 'pay',
+      principal: 2000,
+      ignoreDueDate: true,
+      due: null,
+      status: 'confirmed'
+    }
+  ];
+
+  // Horizon is end of month 2026-11-30
+  const res = calculateCoreNumbers({
+    pools,
+    budgets: [],
+    obligations: undatedDebt,
+    ledgerEntries: [],
+    horizonDate: '2026-11-30',
+    asOfDate: '2026-11-01'
+  });
+
+  // 1. Total available is still 10,000
+  assert.equal(res.totalAvailable, 10000);
+
+  // 2. Shortfall is ZERO (because ignoreDueDate is true, so no deadline within horizon)
+  assert.equal(res.totalConfirmedShortfall, 0);
+
+  // 3. Unallocated remains full 10,000 (not drained by informal debt)
+  assert.equal(res.unallocated, 10000);
+
+  // 4. Net Position accurately accounts for the liability: 10,000 - 2,000 = 8,000
+  assert.equal(res.confirmedPayablesTotal, 2000);
+  assert.equal(res.netPosition, 8000);
+
+  // Contrast: if ignoreDueDate is false, shortfall triggers and unallocated drops to 8,000
+  const datedDebt = [{ ...undatedDebt[0], ignoreDueDate: false }];
+  const resDated = calculateCoreNumbers({
+    pools,
+    budgets: [],
+    obligations: datedDebt,
+    ledgerEntries: [],
+    horizonDate: '2026-11-30',
+    asOfDate: '2026-11-01'
+  });
+  assert.equal(resDated.totalConfirmedShortfall, 2000);
+  assert.equal(resDated.unallocated, 8000);
+});

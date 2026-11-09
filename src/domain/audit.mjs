@@ -322,7 +322,9 @@ def audit():
         total_committed += funded_remaining
 
         is_due = True
-        if ob.get('due'):
+        if ob.get('ignoreDueDate'):
+            is_due = False
+        elif ob.get('due'):
             is_due = parse_iso(ob['due']) <= horizon_date
 
         if ob.get('direction') == 'pay':

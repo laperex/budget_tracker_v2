@@ -70,7 +70,7 @@ export function calculateCoreNumbers({
     // Obligations may have funded envelopes/allocations assigned to them
     obligationsCommitted += state.fundedRemaining;
 
-    const isDueInHorizon = !horizonDate || !state.due || state.due <= horizonDate;
+    const isDueInHorizon = !state.ignoreDueDate && (!horizonDate || !state.due || state.due <= horizonDate);
 
     if (state.direction === 'pay') {
       if (state.status === 'confirmed' || state.status === 'partial') {

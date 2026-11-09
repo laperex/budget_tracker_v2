@@ -444,8 +444,11 @@ export function initApp(rootElement) {
                     ${isEven ? 'SETTLED' : isOwed ? 'OWES YOU' : 'YOU OWE'}
                   </span>
                 </div>
-                <div style="font-size:18px;font-weight:800;font-family:var(--font-mono);color:${isEven ? 'var(--fg)' : isOwed ? 'var(--acc)' : 'var(--bad)'};margin-bottom:10px;">
+                <div style="font-size:18px;font-weight:800;font-family:var(--font-mono);color:${isEven ? 'var(--fg)' : isOwed ? 'var(--acc)' : 'var(--bad)'};margin-bottom:6px;">
                   ${formatINR(Math.abs(p.netBalance))}
+                </div>
+                <div style="font-size:11px;color:var(--mut);margin-bottom:10px;">
+                  ${p.debts.length + p.receivables.length} obligation(s)${p.debts.some((d) => d.ignoreDueDate) || p.receivables.some((r) => r.ignoreDueDate) ? ' • <span style="color:var(--peach);">Open / Undated</span>' : ''}
                 </div>
                 <div style="display:flex;gap:6px;">
                   <button class="sec sm" data-action="open-repay-modal" data-person="${p.person}">Settle / Repay</button>
@@ -761,7 +764,8 @@ export function initApp(rootElement) {
               cardClass = `record-card type-obligation`;
               pillHtml = `<span class="record-type-pill">OBLIGATION</span>`;
               mainHtml = `Obligation "${d.counterparty}" (${d.role}) • Principal: ${formatINR(d.principal)}`;
-              subHtml = `Status: ${d.status || 'confirmed'}${d.due ? ' • Due: ' + d.due : ''}${d.note ? ' • ' + d.note : ''} • ID: ${r.id.slice(0, 8)}`;
+              const dueInfo = d.ignoreDueDate ? '📅 Open / No Deadline' : (d.due ? `Due: ${d.due}` : 'Undated');
+              subHtml = `Status: ${d.status || 'confirmed'} • ${dueInfo}${d.note ? ' • ' + d.note : ''} • ID: ${r.id.slice(0, 8)}`;
             } else if (r.type === 'expected-income') {
               cardClass = `record-card type-expected-income`;
               pillHtml = `<span class="record-type-pill">EXPECTED</span>`;
@@ -880,6 +884,13 @@ export function initApp(rootElement) {
               <label>Counterparty (Person Name)</label>
               <input id="qa-person" type="text" placeholder="e.g. Alice, Bob">
             </div>
+          </div>
+
+          <div class="form-row" id="qa-loan-opt-row" style="display:none;margin-top:-6px;margin-bottom:12px;">
+            <label style="display:flex;align-items:center;gap:6px;cursor:pointer;font-size:12px;">
+              <input type="checkbox" id="qa-loan-ignore-date" checked>
+              <span style="color:var(--peach);">Open / Ignore Due Date (No fixed deadline)</span>
+            </label>
           </div>
 
           <div class="form-row">
@@ -1044,6 +1055,29 @@ export function initApp(rootElement) {
               </div>
             ` : ''}
 
+            ${rec.type === 'obligation' ? `
+              <div class="form-row">
+                <div>
+                  <label>Role</label>
+                  <select id="edit-rec-ob-role">
+                    <option value="bill" ${d.role === 'bill' ? 'selected' : ''}>Recurring Institutional Bill</option>
+                    <option value="debt" ${d.role === 'debt' ? 'selected' : ''}>Debt (You owe them)</option>
+                    <option value="receivable" ${d.role === 'receivable' ? 'selected' : ''}>Receivable (They owe you)</option>
+                  </select>
+                </div>
+                <div>
+                  <label>Due Date</label>
+                  <input type="date" id="edit-rec-ob-due" value="${d.due || ''}">
+                </div>
+              </div>
+              <div class="form-row" style="margin-top:-6px;margin-bottom:10px;">
+                <label style="display:flex;align-items:center;gap:6px;cursor:pointer;font-size:12px;">
+                  <input type="checkbox" id="edit-rec-ob-ignore-date" ${d.ignoreDueDate ? 'checked' : ''}>
+                  <span style="color:var(--peach);">Open / Ignore Due Date (No fixed deadline)</span>
+                </label>
+              </div>
+            ` : ''}
+
             ${'principal' in d ? `
               <div class="form-row">
                 <div>
@@ -1203,10 +1237,16 @@ export function initApp(rootElement) {
               <label>Amount (₹)</label>
               <input id="mo-amt" type="number" step="any" placeholder="0" required>
             </div>
-            <div>
+            <div id="mo-due-col">
               <label>Next Due Date</label>
               <input id="mo-due" type="date">
             </div>
+          </div>
+          <div class="form-row" id="mo-ignore-date-row" style="display:none;margin-top:-6px;margin-bottom:12px;">
+            <label style="display:flex;align-items:center;gap:6px;cursor:pointer;font-size:12px;">
+              <input type="checkbox" id="mo-ignore-date" checked>
+              <span style="color:var(--peach);">Open / Ignore Due Date (No fixed deadline)</span>
+            </label>
           </div>
           <div class="form-row" id="mo-recurrence-row">
             <div>
@@ -1658,6 +1698,22 @@ export function initApp(rootElement) {
         const principalInput = rootElement.querySelector('#edit-rec-principal');
         if (principalInput) data.principal = Number(principalInput.value) || 0;
 
+        const obRoleSelect = rootElement.querySelector('#edit-rec-ob-role');
+        if (obRoleSelect) data.role = obRoleSelect.value;
+
+        const obIgnoreCheck = rootElement.querySelector('#edit-rec-ob-ignore-date');
+        const obDueInput = rootElement.querySelector('#edit-rec-ob-due');
+        if (obIgnoreCheck) {
+          data.ignoreDueDate = obIgnoreCheck.checked;
+          if (data.ignoreDueDate) {
+            data.due = null;
+          } else if (obDueInput) {
+            data.due = obDueInput.value || null;
+          }
+        } else if (obDueInput) {
+          data.due = obDueInput.value || null;
+        }
+
         const noteInput = rootElement.querySelector('#edit-rec-note');
         if (noteInput) {
           if ('note' in data) data.note = noteInput.value.trim();
@@ -1681,6 +1737,7 @@ export function initApp(rootElement) {
       const directHint = rootElement.querySelector('#qa-direct-hint');
       const toPoolCol = rootElement.querySelector('#qa-to-pool-col');
       const counterpartyRow = rootElement.querySelector('#qa-counterparty-row');
+      const qaLoanOptRow = rootElement.querySelector('#qa-loan-opt-row');
 
       const updateDirectHint = () => {
         const t = qaType.value;
@@ -1690,9 +1747,11 @@ export function initApp(rootElement) {
 
       qaType.addEventListener('change', () => {
         const t = qaType.value;
+        const isLoan = t === 'loan_in' || t === 'loan_out';
         budgetRow.style.display = t === 'expense' ? 'flex' : 'none';
         toPoolCol.style.display = t === 'transfer' ? 'block' : 'none';
-        counterpartyRow.style.display = (t === 'loan_in' || t === 'loan_out') ? 'flex' : 'none';
+        counterpartyRow.style.display = isLoan ? 'flex' : 'none';
+        if (qaLoanOptRow) qaLoanOptRow.style.display = isLoan ? 'flex' : 'none';
         updateDirectHint();
       });
 
@@ -1742,6 +1801,7 @@ export function initApp(rootElement) {
           state.records.push(createRecord('transfer', date, { amount: amt, poolId, toPoolId, note }));
         } else if (type === 'loan_out') {
           const person = rootElement.querySelector('#qa-person').value.trim() || 'Friend';
+          const ignoreDue = rootElement.querySelector('#qa-loan-ignore-date')?.checked ?? true;
           const obId = uid();
           state.records.push(createRecord('obligation', date, {
             role: 'receivable',
@@ -1750,11 +1810,14 @@ export function initApp(rootElement) {
             principal: amt,
             status: 'confirmed',
             likelihood: 100,
+            ignoreDueDate: ignoreDue,
+            due: null,
             note
           }, obId));
           state.records.push(createRecord('loan-out', date, { amount: amt, poolId, obligationId: obId, note }));
         } else if (type === 'loan_in') {
           const person = rootElement.querySelector('#qa-person').value.trim() || 'Friend';
+          const ignoreDue = rootElement.querySelector('#qa-loan-ignore-date')?.checked ?? true;
           const obId = uid();
           state.records.push(createRecord('obligation', date, {
             role: 'debt',
@@ -1763,6 +1826,8 @@ export function initApp(rootElement) {
             principal: amt,
             status: 'confirmed',
             likelihood: 100,
+            ignoreDueDate: ignoreDue,
+            due: null,
             note
           }, obId));
           state.records.push(createRecord('loan-in', date, { amount: amt, poolId, obligationId: obId, note }));
@@ -1910,13 +1975,36 @@ export function initApp(rootElement) {
     // Form: Create Obligation / Bill
     const mObForm = rootElement.querySelector('#modal-form-new-obligation');
     if (mObForm) {
+      const moRole = rootElement.querySelector('#mo-role');
+      const moRecurrenceRow = rootElement.querySelector('#mo-recurrence-row');
+      const moIgnoreDateRow = rootElement.querySelector('#mo-ignore-date-row');
+      const moIgnoreDate = rootElement.querySelector('#mo-ignore-date');
+      const moDueCol = rootElement.querySelector('#mo-due-col');
+      const moDue = rootElement.querySelector('#mo-due');
+
+      const updateMoVisibility = () => {
+        if (!moRole) return;
+        const role = moRole.value;
+        const isBill = role === 'bill';
+        if (moRecurrenceRow) moRecurrenceRow.style.display = isBill ? 'flex' : 'none';
+        if (moIgnoreDateRow) moIgnoreDateRow.style.display = isBill ? 'none' : 'flex';
+        const isIgnored = !isBill && moIgnoreDate && moIgnoreDate.checked;
+        if (moDueCol) moDueCol.style.display = isIgnored ? 'none' : 'block';
+      };
+
+      if (moRole) moRole.addEventListener('change', updateMoVisibility);
+      if (moIgnoreDate) moIgnoreDate.addEventListener('change', updateMoVisibility);
+      updateMoVisibility();
+
       mObForm.addEventListener('submit', (e) => {
         e.preventDefault();
-        const role = rootElement.querySelector('#mo-role').value;
+        const role = moRole.value;
         const person = rootElement.querySelector('#mo-person').value.trim();
         const amt = Number(rootElement.querySelector('#mo-amt').value) || 0;
-        const due = rootElement.querySelector('#mo-due').value || null;
-        const cadence = rootElement.querySelector('#mo-cadence').value;
+        const isBill = role === 'bill';
+        const isIgnored = !isBill && moIgnoreDate && moIgnoreDate.checked;
+        const due = isIgnored ? null : (moDue?.value || null);
+        const cadence = isBill ? rootElement.querySelector('#mo-cadence').value : 'none';
 
         let recurrence = null;
         if (cadence !== 'none') {
@@ -1934,6 +2022,7 @@ export function initApp(rootElement) {
           direction: role === 'receivable' ? 'receive' : 'pay',
           principal: amt,
           due,
+          ignoreDueDate: isIgnored,
           status: 'confirmed',
           likelihood: 100,
           recurrence,

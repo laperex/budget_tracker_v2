@@ -83,3 +83,21 @@ test('obligations - bill cycle advance', () => {
   const advanced = advanceBillCycle(bimonthlyBill, '2026-10-16');
   assert.equal(advanced.due, '2026-12-15');
 });
+
+test('obligations - undated / ignore day-dates interpersonal debts netting', () => {
+  const obligations = [
+    // Open informal debt to Bob (ignore due date)
+    { id: 'o-bob-1', role: 'debt', counterparty: 'Bob', direction: 'pay', principal: 1500, ignoreDueDate: true, due: null, status: 'confirmed' },
+    // Open informal receivable from Bob
+    { id: 'o-bob-2', role: 'receivable', counterparty: 'Bob', direction: 'receive', principal: 500, ignoreDueDate: true, due: null, status: 'confirmed' }
+  ];
+
+  const people = groupObligationsByPerson(obligations, []);
+  assert.equal(people.length, 1);
+  const bob = people[0];
+  assert.equal(bob.person, 'Bob');
+  // Net balance: 500 - 1500 = -1000 (You owe Bob 1000)
+  assert.equal(bob.confirmedNet, -1000);
+  assert.equal(bob.netBalance, -1000);
+  assert.equal(bob.debts[0].ignoreDueDate, true);
+});

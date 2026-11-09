@@ -59,7 +59,7 @@ export function projectAtDate({
         capBillOutflow += amt;
         paceBillOutflow += amt * weight;
       }
-    } else if (ob.due && ob.due >= asOfDate && ob.due <= targetDate) {
+    } else if (!ob.ignoreDueDate && ob.due && ob.due >= asOfDate && ob.due <= targetDate) {
       const isPotential = ob.status === 'potential';
       const weight = isPotential ? ((ob.likelihood || 50) / 100) : 1.0;
       const amt = ob.outstanding;
