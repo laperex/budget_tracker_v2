@@ -83,6 +83,7 @@ function build() {
     short_name: 'Budget',
     description: 'AMOLED Black Blocky Personal Finance & Budget Tracker',
     start_url: './index.html',
+    scope: './',
     display: 'standalone',
     background_color: '#000000',
     theme_color: '#000000',
@@ -102,6 +103,64 @@ function build() {
   <rect x="32" y="32" width="448" height="448" fill="#11111b" stroke="#a6e3a1" stroke-width="24"/>
   <text x="256" y="320" font-family="monospace" font-size="280" font-weight="900" fill="#a6e3a1" text-anchor="middle">₹</text>
 </svg>`;
+
+  const swJs = `// Budget Tracker v2 Service Worker (Offline PWA)
+const CACHE_NAME = 'budget-tracker-v2-v1';
+const ASSETS_TO_CACHE = [
+  './',
+  './index.html',
+  './manifest.webmanifest',
+  './icon.svg'
+];
+
+self.addEventListener('install', (event) => {
+  event.waitUntil(
+    caches.open(CACHE_NAME).then((cache) => {
+      return cache.addAll(ASSETS_TO_CACHE);
+    }).then(() => self.skipWaiting())
+  );
+});
+
+self.addEventListener('activate', (event) => {
+  event.waitUntil(
+    caches.keys().then((keys) => {
+      return Promise.all(
+        keys.filter((key) => key !== CACHE_NAME).map((key) => caches.delete(key))
+      );
+    }).then(() => self.clients.claim())
+  );
+});
+
+self.addEventListener('fetch', (event) => {
+  if (event.request.method !== 'GET') return;
+  event.respondWith(
+    caches.match(event.request).then((cachedResponse) => {
+      if (cachedResponse) {
+        fetch(event.request).then((networkResponse) => {
+          if (networkResponse && networkResponse.status === 200) {
+            caches.open(CACHE_NAME).then((cache) => cache.put(event.request, networkResponse));
+          }
+        }).catch(() => {});
+        return cachedResponse;
+      }
+      return fetch(event.request).then((networkResponse) => {
+        if (!networkResponse || networkResponse.status !== 200 || networkResponse.type !== 'basic') {
+          return networkResponse;
+        }
+        const responseToCache = networkResponse.clone();
+        caches.open(CACHE_NAME).then((cache) => {
+          cache.put(event.request, responseToCache);
+        });
+        return networkResponse;
+      }).catch(() => {
+        if (event.request.mode === 'navigate') {
+          return caches.match('./index.html');
+        }
+      });
+    })
+  );
+});
+`;
 
   const html = `<!doctype html>
 <html lang="en">
@@ -124,6 +183,11 @@ ${css}
 <main id="app"></main>
 <script>
 ${combinedJs}
+if ('serviceWorker' in navigator && (window.location.protocol === 'https:' || window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1')) {
+  window.addEventListener('load', () => {
+    navigator.serviceWorker.register('./sw.js').catch(() => {});
+  });
+}
 </script>
 </body>
 </html>`;
@@ -135,17 +199,34 @@ ${combinedJs}
 
   const outDist = path.join(distDir, 'index.html');
   const outRoot = path.join(rootDir, 'Budget Tracker v2.html');
+  const outRootIndex = path.join(rootDir, 'index.html');
   const outManifest = path.join(distDir, 'manifest.webmanifest');
+  const outManifestRoot = path.join(rootDir, 'manifest.webmanifest');
   const outIcon = path.join(distDir, 'icon.svg');
+  const outIconRoot = path.join(rootDir, 'icon.svg');
+  const outSw = path.join(distDir, 'sw.js');
+  const outSwRoot = path.join(rootDir, 'sw.js');
 
+  const manifestStr = JSON.stringify(manifestJson, null, 2);
+
+  // Write to dist/
   fs.writeFileSync(outDist, html, 'utf8');
-  fs.writeFileSync(outRoot, html, 'utf8');
-  fs.writeFileSync(outManifest, JSON.stringify(manifestJson, null, 2), 'utf8');
+  fs.writeFileSync(outManifest, manifestStr, 'utf8');
   fs.writeFileSync(outIcon, iconSvg, 'utf8');
+  fs.writeFileSync(outSw, swJs, 'utf8');
+
+  // Write to root for zero-config branch deployments & local opening
+  fs.writeFileSync(outRoot, html, 'utf8');
+  fs.writeFileSync(outRootIndex, html, 'utf8');
+  fs.writeFileSync(outManifestRoot, manifestStr, 'utf8');
+  fs.writeFileSync(outIconRoot, iconSvg, 'utf8');
+  fs.writeFileSync(outSwRoot, swJs, 'utf8');
 
   console.log(`[SUCCESS] Bundle generated:`);
   console.log(`  - ${outDist} (${(Buffer.byteLength(html) / 1024).toFixed(1)} KB)`);
-  console.log(`  - ${outRoot} (${(Buffer.byteLength(html) / 1024).toFixed(1)} KB)`);
+  console.log(`  - ${outRootIndex}`);
+  console.log(`  - ${outRoot}`);
+  console.log(`  - ${outSw}`);
   console.log(`  - ${outManifest}`);
   console.log(`  - ${outIcon}`);
 }

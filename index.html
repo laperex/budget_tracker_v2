@@ -1,0 +1,4042 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<meta name="theme-color" content="#000000">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<meta name="apple-mobile-web-app-title" content="Budget">
+<meta name="application-name" content="Budget Tracker">
+<link rel="manifest" href="manifest.webmanifest">
+<link rel="icon" type="image/svg+xml" href="icon.svg">
+<title>Budget Tracker v2</title>
+<style>
+/* ==========================================================================
+   BUDGET TRACKER v2 — CATPPUCCIN AMOLED BLACK BLOCKY STYLES
+   True #000000 OLED pitch-black background, Catppuccin Mocha palette,
+   STRICTLY 0px BORDER-RADIUS (zero round corners everywhere).
+   ========================================================================== */
+
+:root {
+  --bg: #000000;          /* True AMOLED pure pitch-black */
+  --card: #11111b;        /* Catppuccin Crust */
+  --card-alt: #181825;    /* Catppuccin Mantle */
+  --surface: #1e1e2e;     /* Catppuccin Base */
+  --fg: #cdd6f4;          /* Catppuccin Text */
+  --mut: #a6adc8;         /* Catppuccin Subtext0 */
+  --line: #313244;        /* Catppuccin Surface0 */
+  --line-high: #45475a;   /* Catppuccin Surface1 */
+  --line-strong: #585b70; /* Catppuccin Surface2 */
+  
+  --acc: #a6e3a1;         /* Catppuccin Green */
+  --accfg: #000000;
+  --sapphire: #74c7ec;    /* Sapphire blue */
+  --mauve: #cba6f7;       /* Mauve */
+  --peach: #fab387;       /* Peach / Warn */
+  --bad: #f38ba8;         /* Red / Alert */
+  --teal: #94e2d5;
+  --yellow: #f9e2af;
+
+  --font-sans: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
+  --font-mono: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, "Liberation Mono", monospace;
+
+  color-scheme: dark;
+}
+
+/* ZERO ROUND CORNERS EVERYWHERE - STRICTLY BLOCKY */
+*, *::before, *::after {
+  box-sizing: border-box;
+  border-radius: 0 !important;
+}
+
+html, body {
+  margin: 0;
+  padding: 0;
+  background: var(--bg);
+  color: var(--fg);
+  font-family: var(--font-sans);
+  font-size: 14px;
+  line-height: 1.45;
+  -webkit-font-smoothing: antialiased;
+  padding-top: env(safe-area-inset-top, 0px);
+  padding-bottom: env(safe-area-inset-bottom, 0px);
+}
+
+.mono {
+  font-family: var(--font-mono);
+  font-variant-numeric: tabular-nums;
+}
+
+/* Layout Container */
+#app {
+  max-width: 960px;
+  margin: 0 auto;
+  padding: 12px 14px 80px;
+}
+
+@media (min-width: 800px) {
+  #app {
+    padding: 24px 20px 60px;
+  }
+}
+
+/* Top Navigation Bar */
+header.app-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  border-bottom: 2px solid var(--line);
+  padding-bottom: 12px;
+  margin-bottom: 16px;
+  flex-wrap: wrap;
+  gap: 10px;
+}
+
+.logo-area {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.logo-tag {
+  background: var(--acc);
+  color: var(--accfg);
+  font-weight: 800;
+  font-family: var(--font-mono);
+  font-size: 11px;
+  padding: 2px 6px;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+}
+
+h1.app-title {
+  font-size: 16px;
+  font-weight: 700;
+  letter-spacing: 0.05em;
+  margin: 0;
+  text-transform: uppercase;
+}
+
+/* Tab Navigation Buttons */
+.tab-nav {
+  display: flex;
+  border: 1px solid var(--line);
+  background: var(--card);
+  overflow-x: auto;
+  max-width: 100%;
+}
+
+.tab-btn {
+  background: transparent;
+  color: var(--mut);
+  border: none;
+  border-right: 1px solid var(--line);
+  padding: 8px 14px;
+  font-family: var(--font-mono);
+  font-size: 12px;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  cursor: pointer;
+  white-space: nowrap;
+  transition: background 0.1s, color 0.1s;
+}
+
+.tab-btn:last-child {
+  border-right: none;
+}
+
+.tab-btn:hover {
+  background: var(--card-alt);
+  color: var(--fg);
+}
+
+.tab-btn.active {
+  background: var(--acc);
+  color: var(--accfg);
+}
+
+/* Cards & Containers */
+.card {
+  background: var(--card);
+  border: 1px solid var(--line);
+  padding: 14px;
+  margin-bottom: 12px;
+}
+
+.card-title {
+  font-size: 11px;
+  font-family: var(--font-mono);
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+  color: var(--mut);
+  margin: 0 0 10px;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+/* Hero Numbers Grid */
+.hero-grid {
+  display: grid;
+  grid-template-columns: 1fr;
+  gap: 8px;
+  margin-bottom: 14px;
+}
+
+@media (min-width: 600px) {
+  .hero-grid {
+    grid-template-columns: repeat(3, 1fr);
+  }
+}
+
+.kpi-card {
+  background: var(--card);
+  border: 1px solid var(--line);
+  padding: 12px 14px;
+}
+
+.kpi-card.highlight {
+  border-left: 4px solid var(--acc);
+}
+
+.kpi-card.warn {
+  border-left: 4px solid var(--peach);
+}
+
+.kpi-card.danger {
+  border-left: 4px solid var(--bad);
+}
+
+.kpi-lbl {
+  font-size: 11px;
+  color: var(--mut);
+  font-family: var(--font-mono);
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+  margin-bottom: 4px;
+}
+
+.kpi-val {
+  font-size: 26px;
+  font-weight: 700;
+  font-family: var(--font-mono);
+  font-variant-numeric: tabular-nums;
+  line-height: 1.1;
+}
+
+.kpi-sub {
+  font-size: 12px;
+  color: var(--mut);
+  margin-top: 4px;
+}
+
+/* Bad / Good / Warn Text */
+.bad { color: var(--bad) !important; }
+.good { color: var(--acc) !important; }
+.warn { color: var(--peach) !important; }
+.sapphire { color: var(--sapphire) !important; }
+.mauve { color: var(--mauve) !important; }
+
+/* Grid Layouts */
+.grid-2 {
+  display: grid;
+  grid-template-columns: 1fr;
+  gap: 12px;
+}
+
+@media (min-width: 720px) {
+  .grid-2 {
+    grid-template-columns: 1fr 1fr;
+  }
+}
+
+/* Blocky Form Elements */
+input, select, textarea, button {
+  font-family: var(--font-mono);
+  font-size: 13px;
+  background: var(--card-alt);
+  color: var(--fg);
+  border: 1px solid var(--line);
+  padding: 8px 10px;
+  outline: none;
+  width: 100%;
+}
+
+input:focus, select:focus, textarea:focus {
+  border-color: var(--acc);
+}
+
+label {
+  display: block;
+  font-size: 11px;
+  font-family: var(--font-mono);
+  color: var(--mut);
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  margin-bottom: 4px;
+}
+
+.form-row {
+  display: flex;
+  gap: 8px;
+  margin-bottom: 10px;
+  flex-wrap: wrap;
+}
+
+.form-row > * {
+  flex: 1;
+  min-width: 120px;
+}
+
+button {
+  cursor: pointer;
+  background: var(--card-alt);
+  border: 1px solid var(--line-high);
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  padding: 9px 14px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 6px;
+}
+
+button:hover {
+  background: var(--surface);
+  border-color: var(--fg);
+}
+
+button.pri {
+  background: var(--acc);
+  color: var(--accfg);
+  border-color: var(--acc);
+  font-weight: 700;
+}
+
+button.pri:hover {
+  filter: brightness(1.1);
+}
+
+button.danger {
+  background: var(--bad);
+  color: #000;
+  border-color: var(--bad);
+}
+
+button.ghost {
+  background: transparent;
+  border-color: var(--line);
+}
+
+button.ghost:hover {
+  background: var(--card-alt);
+}
+
+button.sm {
+  padding: 4px 8px;
+  font-size: 11px;
+  width: auto;
+}
+
+/* Sharp Progress Bar */
+.block-bar {
+  height: 8px;
+  background: var(--line);
+  border: 1px solid var(--line-high);
+  position: relative;
+  overflow: hidden;
+  margin: 6px 0;
+}
+
+.block-bar > i {
+  display: block;
+  height: 100%;
+  background: var(--acc);
+}
+
+.block-bar.over > i {
+  background: var(--bad);
+}
+
+/* Tables */
+.table-wrap {
+  overflow-x: auto;
+  border: 1px solid var(--line);
+}
+
+table {
+  width: 100%;
+  border-collapse: collapse;
+  font-family: var(--font-mono);
+  font-size: 12px;
+}
+
+th, td {
+  padding: 8px 10px;
+  border-bottom: 1px solid var(--line);
+  text-align: right;
+  white-space: nowrap;
+}
+
+th:first-child, td:first-child {
+  text-align: left;
+}
+
+th {
+  background: var(--card-alt);
+  color: var(--mut);
+  font-size: 11px;
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+}
+
+tr.active-row td {
+  background: var(--surface);
+  font-weight: 700;
+  color: var(--acc);
+}
+
+/* Horizon Forecast Card */
+.forecast-box {
+  background: #0d0f14;
+  border: 2px solid var(--sapphire);
+  padding: 14px;
+  margin-bottom: 14px;
+}
+
+.horizon-toggle-bar {
+  display: flex;
+  gap: 6px;
+  flex-wrap: wrap;
+  margin: 8px 0 12px;
+}
+
+.horizon-btn {
+  width: auto;
+  padding: 4px 10px;
+  font-size: 11px;
+  background: var(--card);
+  border: 1px solid var(--line);
+  color: var(--fg);
+}
+
+.horizon-btn.active {
+  background: var(--sapphire);
+  color: #000;
+  border-color: var(--sapphire);
+  font-weight: 700;
+}
+
+/* Badge Tags */
+.badge {
+  display: inline-block;
+  padding: 2px 6px;
+  font-family: var(--font-mono);
+  font-size: 10px;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  border: 1px solid var(--line);
+}
+
+.badge.acc { background: rgba(166, 227, 161, 0.15); color: var(--acc); border-color: var(--acc); }
+.badge.bad { background: rgba(243, 139, 168, 0.15); color: var(--bad); border-color: var(--bad); }
+.badge.warn { background: rgba(250, 179, 135, 0.15); color: var(--peach); border-color: var(--peach); }
+.badge.blue { background: rgba(116, 199, 236, 0.15); color: var(--sapphire); border-color: var(--sapphire); }
+
+/* Item List */
+.item-row {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 8px 0;
+  border-bottom: 1px solid var(--line);
+  gap: 8px;
+}
+
+.item-row:last-child {
+  border-bottom: none;
+}
+
+/* Bottom Floating Navigation for Mobile */
+@media (max-width: 680px) {
+  .app-header .tab-nav {
+    position: fixed;
+    bottom: 0;
+    left: 0;
+    right: 0;
+    z-index: 100;
+    border: none;
+    border-top: 2px solid var(--line-high);
+    background: #000000;
+    justify-content: space-around;
+  }
+  .app-header .tab-btn {
+    flex: 1;
+    text-align: center;
+    padding: 12px 6px;
+    font-size: 11px;
+    border-right: 1px solid var(--line);
+  }
+}
+
+/* Modal Dialog */
+.modal-overlay {
+  position: fixed;
+  inset: 0;
+  background: rgba(0, 0, 0, 0.85);
+  backdrop-filter: blur(2px);
+  z-index: 200;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 16px;
+}
+
+.modal-content {
+  background: #090a0f;
+  border: 2px solid var(--line-high);
+  width: 100%;
+  max-width: 520px;
+  max-height: 90vh;
+  overflow-y: auto;
+  padding: 20px;
+  box-shadow: 0 10px 40px rgba(0,0,0,0.9);
+}
+
+.modal-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  border-bottom: 1px solid var(--line);
+  padding-bottom: 10px;
+  margin-bottom: 14px;
+}
+
+.modal-title {
+  font-size: 14px;
+  font-weight: 700;
+  font-family: var(--font-mono);
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+  margin: 0;
+}
+
+</style>
+</head>
+<body>
+<main id="app"></main>
+<script>
+(() => {
+
+// --- src/domain/dateUtils.mjs ---
+/**
+ * Pure date utility functions using local ISO strings (YYYY-MM-DD)
+ * and day arithmetic via UTC day numbers.
+ */
+
+const pad2 = (n) => String(n).padStart(2, '0');
+
+const formatDate = (d) =>
+  `${d.getFullYear()}-${pad2(d.getMonth() + 1)}-${pad2(d.getDate())}`;
+
+const todayISO = () => formatDate(new Date());
+
+const parseISO = (s) => {
+  if (!s || typeof s !== 'string') return new Date();
+  const [y, m, d] = s.split('-').map(Number);
+  return new Date(y, m - 1, d || 1);
+};
+
+/**
+ * Returns UTC day number for YYYY-MM-DD
+ */
+const dayNumber = (s) => {
+  if (!s) return 0;
+  const [y, m, d] = s.split('-').map(Number);
+  return Math.floor(Date.UTC(y, m - 1, d || 1) / 864e5);
+};
+
+const dayDiff = (startStr, endStr) => {
+  return dayNumber(endStr) - dayNumber(startStr);
+};
+
+const addDays = (s, k) => {
+  const [y, m, d] = s.split('-').map(Number);
+  const next = new Date(y, m - 1, (d || 1) + k);
+  return formatDate(next);
+};
+
+const addMonths = (s, mCount) => {
+  const [y, m, d] = s.split('-').map(Number);
+  // Target month and year
+  const targetMonthIndex = (m - 1) + mCount;
+  const next = new Date(y, targetMonthIndex, d || 1);
+  return formatDate(next);
+};
+
+const shortDate = (s) => {
+  if (!s) return '';
+  const [y, m, d] = s.split('-').map(Number);
+  return new Date(y, m - 1, d || 1).toLocaleDateString('en-IN', {
+    day: 'numeric',
+    month: 'short'
+  });
+};
+
+const formatINR = (n) => {
+  const r = Math.round((Number(n) || 0) * 100) / 100;
+  const isNeg = r < 0;
+  const abs = Math.abs(r);
+  return (isNeg ? '−₹' : '₹') + abs.toLocaleString('en-IN', {
+    minimumFractionDigits: 0,
+    maximumFractionDigits: 2
+  });
+};
+
+const getMonthShard = (dateStr) => {
+  const s = dateStr || todayISO();
+  return s.slice(0, 7); // YYYY-MM
+};
+
+const getCycleEnd = (todayStr, cycleDay = 1) => {
+  const [y, m, d] = (todayStr || todayISO()).split('-').map(Number);
+  let nextCycleDate;
+  if (d < cycleDay) {
+    nextCycleDate = new Date(y, m - 1, cycleDay);
+  } else {
+    nextCycleDate = new Date(y, m, cycleDay);
+  }
+  return formatDate(nextCycleDate);
+};
+
+// --- src/domain/types.mjs ---
+/**
+ * Core type definitions, constants, and default seeds for Budget Tracker v2
+ */
+
+const DEFAULT_POOLS = [
+  { id: 'pool-bank', name: 'Bank Account', type: 'bank', opening: 0, isArchived: false },
+  { id: 'pool-cash', name: 'Cash in Hand', type: 'cash', opening: 0, isArchived: false },
+  { id: 'pool-upi', name: 'UPI / Wallet', type: 'upi', opening: 0, isArchived: false }
+];
+
+const DEFAULT_ENVELOPES = [
+  { id: 'env-impulse', name: 'Impulse', kind: 'envelope', funding: [], refillMonthly: false, refillAmount: 0, hardCap: true },
+  { id: 'env-petrol', name: 'Petrol', kind: 'envelope', funding: [], refillMonthly: true, refillAmount: 2000, hardCap: false },
+  { id: 'env-utilities', name: 'Utilities', kind: 'envelope', funding: [], refillMonthly: false, refillAmount: 0, hardCap: false },
+  { id: 'env-rent', name: 'Rent', kind: 'envelope', funding: [], refillMonthly: true, refillAmount: 15000, hardCap: false },
+  { id: 'env-misc', name: 'Misc', kind: 'envelope', funding: [], refillMonthly: false, refillAmount: 0, hardCap: false }
+];
+
+const createInitialConfig = () => ({
+  version: 2,
+  cycleStartDay: 1,
+  activeTab: 'overview',
+  activeBudgetId: null,
+  pools: [...DEFAULT_POOLS],
+  budgets: [
+    {
+      id: 'budget-daily',
+      name: 'Daily Spending',
+      kind: 'daily',
+      amount: 6000,
+      days: 30,
+      start: '2026-11-01',
+      funding: [{ poolId: 'pool-bank', amount: 6000 }]
+    },
+    ...DEFAULT_ENVELOPES
+  ],
+  obligations: [],
+  expectedIncomes: [],
+  v1Migration: null
+});
+
+// --- src/domain/recurrence.mjs ---
+
+
+/**
+ * Computes all occurrence dates of a recurring rule between fromDate and targetDate inclusive.
+ * Handles interval in months, weeks, or days.
+ *
+ * @param {Object} rule
+ * @param {number} rule.interval - e.g. 1 (monthly), 2 (every 2 months for electricity)
+ * @param {'months'|'weeks'|'days'} rule.unit
+ * @param {string} rule.anchorDate - Base starting date 'YYYY-MM-DD'
+ * @param {string} targetDate - End of horizon 'YYYY-MM-DD'
+ * @param {string|null} fromDate - Earliest date to include (inclusive, default null = all >= anchorDate)
+ * @returns {string[]} Array of ISO dates
+ */
+function getOccurrencesUpTo(rule, targetDate, fromDate = null) {
+  if (!rule || !rule.anchorDate || !targetDate) return [];
+  const interval = Math.max(1, Math.floor(Number(rule.interval) || 1));
+  const unit = rule.unit || 'months';
+
+  const anchor = parseISO(rule.anchorDate);
+  const targetDayNum = dayNumber(targetDate);
+  const fromDayNum = fromDate ? dayNumber(fromDate) : null;
+
+  const occurrences = [];
+  let curr = new Date(anchor.getFullYear(), anchor.getMonth(), anchor.getDate());
+  let iteration = 0;
+  const maxIterations = 240; // Guard against runaway loops (e.g. 20 years)
+
+  while (iteration++ < maxIterations) {
+    const currStr = formatDate(curr);
+    const currDayNum = dayNumber(currStr);
+
+    if (currDayNum > targetDayNum) {
+      break;
+    }
+
+    if (fromDayNum === null || currDayNum >= fromDayNum) {
+      occurrences.push(currStr);
+    }
+
+    // Step forward
+    if (unit === 'months') {
+      const nextMonth = curr.getMonth() + interval;
+      const originalDay = anchor.getDate();
+      // Handle month end clipping (e.g. 31st to 30th/28th)
+      const testDate = new Date(curr.getFullYear(), nextMonth, 1);
+      const daysInNextMonth = new Date(testDate.getFullYear(), testDate.getMonth() + 1, 0).getDate();
+      curr = new Date(testDate.getFullYear(), testDate.getMonth(), Math.min(originalDay, daysInNextMonth));
+    } else if (unit === 'weeks') {
+      curr = parseISO(addDays(currStr, interval * 7));
+    } else if (unit === 'days') {
+      curr = parseISO(addDays(currStr, interval));
+    } else {
+      break;
+    }
+  }
+
+  return occurrences;
+}
+
+/**
+ * Returns the next upcoming occurrence strictly >= afterDate
+ */
+function getNextOccurrence(rule, afterDate) {
+  if (!rule || !rule.anchorDate) return null;
+  const afterDayNum = dayNumber(afterDate);
+  const interval = Math.max(1, Math.floor(Number(rule.interval) || 1));
+  const unit = rule.unit || 'months';
+
+  let curr = parseISO(rule.anchorDate);
+  let iteration = 0;
+  while (iteration++ < 240) {
+    const currStr = formatDate(curr);
+    if (dayNumber(currStr) >= afterDayNum) {
+      return currStr;
+    }
+    if (unit === 'months') {
+      const nextMonth = curr.getMonth() + interval;
+      curr = new Date(curr.getFullYear(), nextMonth, curr.getDate());
+    } else if (unit === 'weeks') {
+      curr = parseISO(addDays(currStr, interval * 7));
+    } else {
+      curr = parseISO(addDays(currStr, interval));
+    }
+  }
+  return null;
+}
+
+// --- src/domain/ledger.mjs ---
+/**
+ * Pure ledger calculation engine.
+ * Derives pool balances, budget spends, and obligation settlements directly from append-only events.
+ */
+
+/**
+ * Calculates current balance for all pools based on opening balances + ledger events.
+ *
+ * balance = opening + Σ income + Σ loan_in − Σ spend − Σ repayment_out − Σ loan_out ± Σ transfer ± Σ adjustment
+ *
+ * @param {Array} pools
+ * @param {Array} ledgerEntries
+ * @returns {Map<string, { id: string, name: string, type: string, balance: number, opening: number, isArchived: boolean }>}
+ */
+function calculatePoolBalances(pools, ledgerEntries = []) {
+  const map = new Map();
+  for (const p of pools) {
+    map.set(p.id, {
+      id: p.id,
+      name: p.name,
+      type: p.type || 'bank',
+      opening: Number(p.opening) || 0,
+      balance: Number(p.opening) || 0,
+      isArchived: Boolean(p.isArchived)
+    });
+  }
+
+  // Sort entries chronologically to ensure adjustments set state accurately in time order
+  const sorted = [...ledgerEntries].sort((a, b) => {
+    if (a.date !== b.date) return a.date.localeCompare(b.date);
+    return (a.id || '').localeCompare(b.id || '');
+  });
+
+  for (const entry of sorted) {
+    const amt = Number(entry.amount) || 0;
+    const pool = map.get(entry.poolId);
+
+    switch (entry.type) {
+      case 'income':
+      case 'loan_in': {
+        if (pool) pool.balance += amt;
+        break;
+      }
+
+      case 'expense':
+      case 'loan_out': {
+        if (pool) pool.balance -= amt;
+        break;
+      }
+
+      case 'transfer': {
+        const fromPool = map.get(entry.poolId);
+        const toPool = map.get(entry.toPoolId);
+        if (fromPool) fromPool.balance -= amt;
+        if (toPool) toPool.balance += amt;
+        break;
+      }
+
+      case 'repayment': {
+        if (pool) {
+          // If direction === 'in' (someone repaid me), money enters pool
+          // If direction === 'out' (I repaid debt), money leaves pool
+          if (entry.direction === 'in') {
+            pool.balance += amt;
+          } else {
+            pool.balance -= amt;
+          }
+        }
+        break;
+      }
+
+      case 'adjustment': {
+        if (pool) {
+          if (typeof entry.targetBalance === 'number') {
+            pool.balance = entry.targetBalance;
+          } else if (typeof entry.delta === 'number') {
+            pool.balance += entry.delta;
+          }
+        }
+        break;
+      }
+
+      case 'allocation':
+        // Allocation adjusts budget earmarks, no physical pool balance change
+        break;
+
+      default:
+        break;
+    }
+  }
+
+  return map;
+}
+
+/**
+ * Returns map of budgetId -> total spend
+ */
+function aggregateBudgetSpends(ledgerEntries = []) {
+  const spendMap = new Map();
+  for (const entry of ledgerEntries) {
+    if (entry.type === 'expense' && entry.budgetId) {
+      const prev = spendMap.get(entry.budgetId) || 0;
+      spendMap.set(entry.budgetId, prev + (Number(entry.amount) || 0));
+    }
+  }
+  return spendMap;
+}
+
+/**
+ * Returns map of obligationId -> total repayments & expenses
+ */
+function aggregateObligationPayments(ledgerEntries = []) {
+  const map = new Map();
+  for (const entry of ledgerEntries) {
+    const amt = Number(entry.amount) || 0;
+    if (entry.type === 'repayment' && entry.obligationId) {
+      const prev = map.get(entry.obligationId) || 0;
+      map.set(entry.obligationId, prev + amt);
+    } else if (entry.type === 'expense' && entry.obligationId) {
+      // Bill payment entered as expense charged to obligation
+      const prev = map.get(entry.obligationId) || 0;
+      map.set(entry.obligationId, prev + amt);
+    }
+  }
+  return map;
+}
+
+/**
+ * Computes net funding allocated to a budget from allocations
+ */
+function aggregateAllocations(ledgerEntries = []) {
+  const budgetAllocations = new Map();
+  for (const entry of ledgerEntries) {
+    if (entry.type === 'allocation') {
+      const amt = Number(entry.amount) || 0;
+      if (entry.toBudgetId) {
+        const cur = budgetAllocations.get(entry.toBudgetId) || 0;
+        budgetAllocations.set(entry.toBudgetId, cur + amt);
+      }
+      if (entry.fromBudgetId) {
+        const cur = budgetAllocations.get(entry.fromBudgetId) || 0;
+        budgetAllocations.set(entry.fromBudgetId, cur - amt);
+      }
+    }
+  }
+  return budgetAllocations;
+}
+
+// --- src/domain/budgets.mjs ---
+
+
+
+/**
+ * Calculates rolling daily allowance for a 'daily' budget.
+ * Exact v1 parity:
+ * allowance_i = (B − spent_before_i) / (N − i)
+ * left_i = allowance_i − spent_i
+ *
+ * @param {Object} b - Daily budget object
+ * @param {Array} ledgerEntries - All ledger entries
+ * @param {string} asOfDate - Target date (defaults to todayISO())
+ */
+function calcDailyBudget(b, ledgerEntries = [], asOfDate = todayISO()) {
+  const N = Math.max(1, Math.floor(Number(b.days) || 30));
+  const B = Number(b.amount) || 0;
+  const s0 = dayNumber(b.start);
+  const currentDayNum = dayNumber(asOfDate);
+  const idx = currentDayNum - s0;
+
+  const state = idx < 0 ? 'pre' : idx >= N ? 'done' : 'on';
+  const di = Math.min(Math.max(idx, 0), N - 1);
+
+  // Filter expenses belonging to this budget
+  const expenses = ledgerEntries.filter(
+    (e) => e.type === 'expense' && e.budgetId === b.id
+  );
+
+  const sp = Array(N).fill(0);
+  for (const e of expenses) {
+    const dayOffset = dayNumber(e.date) - s0;
+    const clampedIndex = Math.min(Math.max(dayOffset, 0), N - 1);
+    sp[clampedIndex] += Number(e.amount) || 0;
+  }
+
+  let cum = 0;
+  const rows = [];
+  for (let i = 0; i < N; i++) {
+    const al = (B - cum) / (N - i);
+    rows.push({
+      i,
+      date: addDays(b.start, i),
+      al,
+      sp: sp[i],
+      left: al - sp[i]
+    });
+    cum += sp[i];
+  }
+
+  const currentRow = rows[di] || { al: B / N, sp: 0, left: B / N };
+  const tomorrowRow = (state !== 'done' && di < N - 1) ? rows[di + 1] : null;
+  const daysLeft = state === 'pre' ? N : state === 'done' ? 0 : N - di;
+
+  return {
+    N,
+    B,
+    state,
+    di,
+    rows,
+    spent: cum,
+    left: B - cum,
+    currentAllowance: currentRow.al,
+    spentToday: currentRow.sp,
+    leftToday: state === 'done' ? B - cum : currentRow.left,
+    tomorrowAllowance: tomorrowRow ? tomorrowRow.al : null,
+    daysLeft,
+    basePerDay: B / N,
+    burnRateDaily: di > 0 ? cum / di : currentRow.sp
+  };
+}
+
+/**
+ * Computes envelope state: funded, spent, left, and hard cap status
+ */
+function calcEnvelope(envelope, ledgerEntries = []) {
+  const staticFunding = (envelope.funding || []).reduce(
+    (sum, f) => sum + (Number(f.amount) || 0),
+    0
+  );
+  const ledgerAlloc = aggregateAllocations(ledgerEntries).get(envelope.id) || 0;
+  const totalFunded = staticFunding + ledgerAlloc;
+
+  const spendMap = aggregateBudgetSpends(ledgerEntries);
+  const spent = spendMap.get(envelope.id) || 0;
+
+  const left = totalFunded - spent;
+  const fundedRemaining = Math.max(0, left);
+  const isOverspent = left < 0;
+  const pctSpent = totalFunded > 0 ? Math.min(100, Math.round((spent / totalFunded) * 100)) : (spent > 0 ? 100 : 0);
+
+  return {
+    id: envelope.id,
+    name: envelope.name,
+    kind: 'envelope',
+    funded: totalFunded,
+    spent,
+    left,
+    fundedRemaining,
+    isOverspent,
+    pctSpent,
+    hardCap: Boolean(envelope.hardCap),
+    refillMonthly: Boolean(envelope.refillMonthly),
+    refillAmount: Number(envelope.refillAmount) || 0
+  };
+}
+
+/**
+ * Validates whether an expense can be added to a budget.
+ * Blocks addition only if envelope has hardCap = true and expense exceeds remaining balance.
+ */
+function validateExpenseAdd(budget, amount, ledgerEntries = []) {
+  const amt = Number(amount) || 0;
+  if (amt <= 0) {
+    return { allowed: false, reason: 'Expense amount must be greater than zero.' };
+  }
+
+  if (budget.kind === 'envelope' && budget.hardCap) {
+    const envState = calcEnvelope(budget, ledgerEntries);
+    if (envState.left - amt < 0) {
+      return {
+        allowed: false,
+        reason: `Hard cap reached for "${budget.name}". Available: ₹${Math.max(0, envState.left).toFixed(2)}, Requested: ₹${amt.toFixed(2)}.`
+      };
+    }
+  }
+
+  return { allowed: true };
+}
+
+// --- src/domain/obligations.mjs ---
+
+
+
+
+/**
+ * Calculates dynamic outstanding balance and status for an obligation based on ledger payments.
+ */
+function calculateObligationState(obligation, ledgerEntries = []) {
+  const principal = Number(obligation.principal) || 0;
+  const status = obligation.status || 'confirmed';
+
+  if (status === 'cancelled' || status === 'forgiven') {
+    return {
+      ...obligation,
+      principal,
+      totalPaid: 0,
+      outstanding: 0,
+      status,
+      isClosed: true
+    };
+  }
+
+  const paymentsMap = aggregateObligationPayments(ledgerEntries);
+  const totalPaid = paymentsMap.get(obligation.id) || 0;
+  const outstanding = Math.max(0, principal - totalPaid);
+
+  let derivedStatus = status;
+  if (status !== 'potential') {
+    if (outstanding <= 0.001) {
+      derivedStatus = 'settled';
+    } else if (totalPaid > 0) {
+      derivedStatus = 'partial';
+    } else {
+      derivedStatus = 'confirmed';
+    }
+  }
+
+  const staticFunded = (obligation.funding || []).reduce(
+    (sum, f) => sum + (Number(f.amount) || 0),
+    0
+  );
+  const fundedRemaining = Math.max(0, staticFunded - totalPaid);
+
+  return {
+    ...obligation,
+    principal,
+    totalPaid,
+    outstanding,
+    fundedRemaining,
+    status: derivedStatus,
+    isClosed: derivedStatus === 'settled',
+    likelihood: typeof obligation.likelihood === 'number' ? obligation.likelihood : (status === 'potential' ? 50 : 100)
+  };
+}
+
+/**
+ * Groups obligations by counterparty person to calculate net balances.
+ * Returns map of personName -> { debts: [], receivables: [], netBalance: number }
+ * netBalance > 0 means they owe me; netBalance < 0 means I owe them.
+ */
+function groupObligationsByPerson(obligations, ledgerEntries = []) {
+  const peopleMap = new Map();
+
+  for (const ob of obligations) {
+    if (ob.role === 'bill') continue; // Bills are institutional, not interpersonal debts
+    const name = (ob.counterparty || 'Unnamed').trim();
+    if (!name) continue;
+
+    if (!peopleMap.has(name)) {
+      peopleMap.set(name, {
+        person: name,
+        debts: [],
+        receivables: [],
+        netBalance: 0,
+        confirmedNet: 0
+      });
+    }
+
+    const state = calculateObligationState(ob, ledgerEntries);
+    const personObj = peopleMap.get(name);
+
+    if (state.direction === 'pay') {
+      personObj.debts.push(state);
+      if (state.status !== 'cancelled' && state.status !== 'forgiven') {
+        const weight = state.status === 'potential' ? (state.likelihood / 100) : 1;
+        personObj.netBalance -= state.outstanding * weight;
+        if (state.status !== 'potential') {
+          personObj.confirmedNet -= state.outstanding;
+        }
+      }
+    } else {
+      personObj.receivables.push(state);
+      if (state.status !== 'cancelled' && state.status !== 'forgiven') {
+        const weight = state.status === 'potential' ? (state.likelihood / 100) : 1;
+        personObj.netBalance += state.outstanding * weight;
+        if (state.status !== 'potential') {
+          personObj.confirmedNet += state.outstanding;
+        }
+      }
+    }
+  }
+
+  return Array.from(peopleMap.values()).sort((a, b) => a.person.localeCompare(b.person));
+}
+
+/**
+ * Advances a recurring bill to its next due date after payment
+ */
+function advanceBillCycle(bill, asOfDate = todayISO()) {
+  if (!bill.recurrence) return bill;
+  const nextDate = getNextOccurrence(bill.recurrence, asOfDate);
+  return {
+    ...bill,
+    due: nextDate || bill.due
+  };
+}
+
+// --- src/domain/totals.mjs ---
+
+
+
+
+
+/**
+ * Calculates core financial numbers according to Section 5:
+ * Total available, Committed, Shortfalls, Unallocated, and Net Position.
+ *
+ * @param {Object} params
+ * @param {Array} params.pools
+ * @param {Array} params.budgets
+ * @param {Array} params.obligations
+ * @param {Array} params.ledgerEntries
+ * @param {string} [params.horizonDate] - Cutoff date for due obligations (defaults to null = all due obligations)
+ * @param {string} [params.asOfDate] - Current date reference
+ */
+function calculateCoreNumbers({
+  pools = [],
+  budgets = [],
+  obligations = [],
+  ledgerEntries = [],
+  horizonDate = null,
+  asOfDate = todayISO()
+}) {
+  const poolBalancesMap = calculatePoolBalances(pools, ledgerEntries);
+  
+  // Total available = Σ pool balances (non-archived)
+  let totalAvailable = 0;
+  for (const pool of poolBalancesMap.values()) {
+    if (!pool.isArchived) {
+      totalAvailable += pool.balance;
+    }
+  }
+
+  // 1. Calculate funded remaining for budgets
+  let budgetsCommitted = 0;
+  const budgetDetails = [];
+
+  for (const b of budgets) {
+    if (b.kind === 'daily') {
+      const dailyState = calcDailyBudget(b, ledgerEntries, asOfDate);
+      // Funded remaining is total left in budget, floored at 0
+      const remaining = Math.max(0, dailyState.left);
+      budgetsCommitted += remaining;
+      budgetDetails.push({ id: b.id, name: b.name, kind: 'daily', fundedRemaining: remaining, state: dailyState });
+    } else {
+      const envState = calcEnvelope(b, ledgerEntries);
+      budgetsCommitted += envState.fundedRemaining;
+      budgetDetails.push({ id: b.id, name: b.name, kind: 'envelope', fundedRemaining: envState.fundedRemaining, state: envState });
+    }
+  }
+
+  // 2. Calculate obligations committed and shortfalls
+  let obligationsCommitted = 0;
+  let totalConfirmedShortfall = 0;
+  let potentialDebtTotal = 0;
+  let potentialDebtWeighted = 0;
+  let confirmedReceivablesTotal = 0;
+  let confirmedPayablesTotal = 0;
+
+  const obligationDetails = [];
+
+  for (const ob of obligations) {
+    const state = calculateObligationState(ob, ledgerEntries);
+    obligationDetails.push(state);
+
+    if (state.isClosed) continue;
+
+    // Obligations may have funded envelopes/allocations assigned to them
+    obligationsCommitted += state.fundedRemaining;
+
+    const isDueInHorizon = !horizonDate || !state.due || state.due <= horizonDate;
+
+    if (state.direction === 'pay') {
+      if (state.status === 'confirmed' || state.status === 'partial') {
+        confirmedPayablesTotal += state.outstanding;
+        if (isDueInHorizon) {
+          const shortfall = Math.max(0, state.outstanding - state.fundedRemaining);
+          totalConfirmedShortfall += shortfall;
+        }
+      } else if (state.status === 'potential') {
+        if (isDueInHorizon) {
+          potentialDebtTotal += state.outstanding;
+          potentialDebtWeighted += state.outstanding * ((state.likelihood || 50) / 100);
+        }
+      }
+    } else if (state.direction === 'receive') {
+      if (state.status === 'confirmed' || state.status === 'partial') {
+        confirmedReceivablesTotal += state.outstanding;
+      }
+    }
+  }
+
+  const committed = budgetsCommitted + obligationsCommitted;
+  const unallocated = totalAvailable - committed - totalConfirmedShortfall;
+  const netPosition = totalAvailable + confirmedReceivablesTotal - confirmedPayablesTotal;
+
+  return {
+    totalAvailable,
+    budgetsCommitted,
+    obligationsCommitted,
+    committed,
+    totalConfirmedShortfall,
+    unallocated,
+    netPosition,
+    potentialDebtTotal,
+    potentialDebtWeighted,
+    confirmedReceivablesTotal,
+    confirmedPayablesTotal,
+    poolBalances: Array.from(poolBalancesMap.values()),
+    budgetDetails,
+    obligationDetails
+  };
+}
+
+// --- src/domain/projection.mjs ---
+
+
+
+
+
+
+/**
+ * Projects financial trajectory and balances at any target future date H.
+ * Generates both Cap (conservative worst-case floor) and Pace (expected velocity).
+ * Also outputs a day-by-day curve for SVG charting and an itemized event list.
+ */
+function projectAtDate({
+  targetDate,
+  asOfDate = todayISO(),
+  pools = [],
+  budgets = [],
+  obligations = [],
+  ledgerEntries = [],
+  expectedIncomes = []
+}) {
+  const core = calculateCoreNumbers({
+    pools,
+    budgets,
+    obligations,
+    ledgerEntries,
+    horizonDate: targetDate,
+    asOfDate
+  });
+
+  const daysToTarget = Math.max(0, dayDiff(asOfDate, targetDate));
+  const events = [];
+
+  // 1. Process Obligations & Recurring Bills
+  let capBillOutflow = 0;
+  let paceBillOutflow = 0;
+
+  for (const rawOb of obligations) {
+    const ob = calculateObligationState(rawOb, ledgerEntries);
+    if (ob.isClosed) continue;
+
+    if (ob.recurrence) {
+      // Find all recurring occurrences between asOfDate and targetDate
+      const occurrences = getOccurrencesUpTo(ob.recurrence, targetDate, asOfDate);
+      for (const occDate of occurrences) {
+        const isPotential = ob.status === 'potential';
+        const weight = isPotential ? ((ob.likelihood || 50) / 100) : 1.0;
+        const amt = ob.principal;
+
+        events.push({
+          date: occDate,
+          type: ob.role === 'bill' ? 'bill' : 'debt',
+          name: ob.counterparty || 'Bill',
+          amount: amt,
+          direction: 'out',
+          isPotential,
+          likelihood: ob.likelihood || 100
+        });
+
+        capBillOutflow += amt;
+        paceBillOutflow += amt * weight;
+      }
+    } else if (ob.due && ob.due >= asOfDate && ob.due <= targetDate) {
+      const isPotential = ob.status === 'potential';
+      const weight = isPotential ? ((ob.likelihood || 50) / 100) : 1.0;
+      const amt = ob.outstanding;
+
+      if (ob.direction === 'pay') {
+        events.push({
+          date: ob.due,
+          type: ob.role === 'bill' ? 'bill' : 'debt',
+          name: ob.counterparty || 'Payable',
+          amount: amt,
+          direction: 'out',
+          isPotential,
+          likelihood: ob.likelihood || 100
+        });
+
+        capBillOutflow += amt;
+        paceBillOutflow += amt * weight;
+      } else if (ob.direction === 'receive') {
+        events.push({
+          date: ob.due,
+          type: 'receivable',
+          name: ob.counterparty || 'Receivable',
+          amount: amt,
+          direction: 'in',
+          isPotential,
+          likelihood: ob.likelihood || 100
+        });
+
+        // Cap excludes receivables (not received yet); Pace includes them
+        if (!isPotential) {
+          paceBillOutflow -= amt * weight; // Negative outflow = inflow
+        }
+      }
+    }
+  }
+
+  // 2. Expected Incomes
+  let paceIncomeInflow = 0;
+  for (const inc of expectedIncomes) {
+    const occurrences = inc.recurrence
+      ? getOccurrencesUpTo(inc.recurrence, targetDate, asOfDate)
+      : (inc.date && inc.date >= asOfDate && inc.date <= targetDate ? [inc.date] : []);
+
+    for (const occDate of occurrences) {
+      const amt = Number(inc.amount) || 0;
+      const weight = ((inc.likelihood ?? 100) / 100);
+
+      events.push({
+        date: occDate,
+        type: 'income',
+        name: inc.source || 'Expected Income',
+        amount: amt,
+        direction: 'in',
+        likelihood: inc.likelihood ?? 100
+      });
+
+      paceIncomeInflow += amt * weight;
+    }
+  }
+
+  // 3. Budgets Burn Estimation
+  let capBudgetOutflow = 0;
+  let paceBudgetOutflow = 0;
+
+  for (const b of budgets) {
+    if (b.kind === 'daily') {
+      const d = calcDailyBudget(b, ledgerEntries, asOfDate);
+      const remaining = Math.max(0, d.left);
+      capBudgetOutflow += remaining;
+
+      // In pace mode, estimate daily burn up to daysToTarget
+      const dailyVelocity = d.burnRateDaily > 0 ? d.burnRateDaily : d.basePerDay;
+      const projectedBurn = Math.min(remaining, dailyVelocity * daysToTarget);
+      paceBudgetOutflow += projectedBurn;
+    } else {
+      const env = calcEnvelope(b, ledgerEntries);
+      capBudgetOutflow += env.fundedRemaining;
+
+      // For envelopes, assume proportional burn over daysToTarget relative to a 30-day cycle
+      const dailyVelocity = env.funded / 30;
+      const projectedBurn = Math.min(env.fundedRemaining, dailyVelocity * daysToTarget);
+      paceBudgetOutflow += projectedBurn;
+    }
+  }
+
+  // Cap: Total available - full budget spend - all confirmed and potential bills/payables
+  const capProjected = core.totalAvailable - capBudgetOutflow - capBillOutflow;
+
+  // Pace: Total available + expected inflows - pace budget burn - pace bills/payables
+  const paceProjected = core.totalAvailable + paceIncomeInflow - paceBudgetOutflow - paceBillOutflow;
+
+  // Sort events chronologically
+  events.sort((a, b) => a.date.localeCompare(b.date));
+
+  // 4. Generate Day-by-Day Trajectory Curve for SVG Charting
+  const trajectory = [];
+  const maxDays = Math.min(daysToTarget, 120); // Cap chart trajectory at 120 days
+  let runningPace = core.totalAvailable;
+  let runningCap = core.totalAvailable;
+
+  const dailyCapBurn = maxDays > 0 ? capBudgetOutflow / maxDays : 0;
+  const dailyPaceBurn = maxDays > 0 ? paceBudgetOutflow / maxDays : 0;
+
+  for (let i = 0; i <= maxDays; i++) {
+    const curDate = addDays(asOfDate, i);
+    const dayEvents = events.filter((e) => e.date === curDate);
+
+    for (const ev of dayEvents) {
+      if (ev.direction === 'in') {
+        runningPace += ev.amount * ((ev.likelihood ?? 100) / 100);
+      } else {
+        runningCap -= ev.amount;
+        runningPace -= ev.amount * ((ev.likelihood ?? 100) / 100);
+      }
+    }
+
+    if (i > 0) {
+      runningCap -= dailyCapBurn;
+      runningPace -= dailyPaceBurn;
+    }
+
+    trajectory.push({
+      date: curDate,
+      dayIndex: i,
+      cap: Math.round(runningCap),
+      pace: Math.round(runningPace),
+      events: dayEvents
+    });
+  }
+
+  return {
+    targetDate,
+    asOfDate,
+    daysToTarget,
+    totalAvailable: core.totalAvailable,
+    unallocated: core.unallocated,
+    capProjected: Math.round(capProjected),
+    paceProjected: Math.round(paceProjected),
+    capBudgetOutflow,
+    paceBudgetOutflow,
+    capBillOutflow,
+    paceBillOutflow,
+    paceIncomeInflow,
+    events,
+    trajectory
+  };
+}
+
+// --- src/domain/audit.mjs ---
+
+
+
+
+
+/**
+ * Runs runtime invariant assertions against the current state.
+ */
+function runInvariantsCheck(state, ledgerEntries = []) {
+  const checks = [];
+  const pools = state.pools || [];
+  const budgets = state.budgets || [];
+  const obligations = state.obligations || [];
+  const asOf = todayISO();
+
+  // Check 1: Transfer Conservation
+  let transferLeaks = 0;
+  for (const e of ledgerEntries) {
+    if (e.type === 'transfer') {
+      if (!e.poolId || !e.toPoolId || e.poolId === e.toPoolId || !(Number(e.amount) > 0)) {
+        transferLeaks++;
+      }
+    }
+  }
+  checks.push({
+    id: 'transfers',
+    name: 'Transfer Balance Conservation',
+    status: transferLeaks === 0 ? 'pass' : 'fail',
+    detail: transferLeaks === 0 ? 'All transfers balanced across source and target.' : `${transferLeaks} invalid transfers detected.`
+  });
+
+  // Check 2: Core Totals Consistency
+  const core = calculateCoreNumbers({ pools, budgets, obligations, ledgerEntries, asOfDate: asOf });
+  let poolSum = 0;
+  for (const p of core.poolBalances) {
+    if (!p.isArchived) poolSum += p.balance;
+  }
+  const totalsMatch = Math.abs(poolSum - core.totalAvailable) < 0.001;
+  checks.push({
+    id: 'pool_sum',
+    name: 'Total Available Pool Reconciliation',
+    status: totalsMatch ? 'pass' : 'fail',
+    detail: `Total Available (₹${core.totalAvailable.toFixed(2)}) matches sum of non-archived pools.`
+  });
+
+  // Check 3: Funded Remaining Floor at Zero
+  let floorViolations = 0;
+  for (const b of core.budgetDetails) {
+    if (b.fundedRemaining < 0) floorViolations++;
+  }
+  checks.push({
+    id: 'budget_floor',
+    name: 'Budget Funded Remaining Floor (≥ 0)',
+    status: floorViolations === 0 ? 'pass' : 'fail',
+    detail: floorViolations === 0 ? 'All budgets respect floor at 0 (overspends reduce Unallocated directly).' : `${floorViolations} floor violations detected.`
+  });
+
+  // Check 4: Unallocated Consistency
+  const expectedUnallocated = core.totalAvailable - core.committed - core.totalConfirmedShortfall;
+  const unallocatedMatch = Math.abs(expectedUnallocated - core.unallocated) < 0.001;
+  checks.push({
+    id: 'unallocated_math',
+    name: 'Unallocated Formulation',
+    status: unallocatedMatch ? 'pass' : 'fail',
+    detail: `Unallocated (₹${core.unallocated.toFixed(2)}) == Total (₹${core.totalAvailable.toFixed(2)}) − Committed (₹${core.committed.toFixed(2)}) − Shortfalls (₹${core.totalConfirmedShortfall.toFixed(2)}).`
+  });
+
+  // Check 5: Negative Pool Warning
+  const negativePools = core.poolBalances.filter((p) => p.balance < 0);
+  checks.push({
+    id: 'negative_pools',
+    name: 'Pool Overdraft Check',
+    status: negativePools.length === 0 ? 'pass' : 'warn',
+    detail: negativePools.length === 0
+      ? 'All physical pools have non-negative balances.'
+      : `${negativePools.map((p) => `${p.name} (₹${p.balance.toFixed(2)})`).join(', ')} currently negative.`
+  });
+
+  const allPassed = checks.every((c) => c.status === 'pass');
+
+  return {
+    passed: allPassed,
+    checks,
+    timestamp: new Date().toISOString()
+  };
+}
+
+/**
+ * Generates a standalone, dependency-free Python 3 script (verify_ledger.py)
+ * embedding the active dataset and independent calculation engine to mathematically
+ * audit all results from the command line.
+ */
+function generatePythonAuditScript(state, ledgerEntries = [], targetDate = null) {
+  const asOf = todayISO();
+  const horizon = targetDate || getCycleEnd(asOf, state.cycleStartDay || 1);
+
+  // Precompute JS engine numbers to verify against in Python
+  const jsCore = calculateCoreNumbers({
+    pools: state.pools || [],
+    budgets: state.budgets || [],
+    obligations: state.obligations || [],
+    ledgerEntries,
+    horizonDate: horizon,
+    asOfDate: asOf
+  });
+
+  const jsProjection = projectAtDate({
+    targetDate: horizon,
+    asOfDate: asOf,
+    pools: state.pools || [],
+    budgets: state.budgets || [],
+    obligations: state.obligations || [],
+    ledgerEntries,
+    expectedIncomes: state.expectedIncomes || []
+  });
+
+  const embeddedData = {
+    asOf,
+    horizon,
+    pools: state.pools || [],
+    budgets: state.budgets || [],
+    obligations: state.obligations || [],
+    expectedIncomes: state.expectedIncomes || [],
+    ledger: ledgerEntries,
+    jsExpected: {
+      totalAvailable: jsCore.totalAvailable,
+      committed: jsCore.committed,
+      shortfall: jsCore.totalConfirmedShortfall,
+      unallocated: jsCore.unallocated,
+      netPosition: jsCore.netPosition,
+      capProjected: jsProjection.capProjected,
+      paceProjected: jsProjection.paceProjected
+    }
+  };
+
+  const jsonStr = JSON.stringify(embeddedData, null, 2);
+
+  return `#!/usr/bin/env python3
+"""
+Budget Tracker v2 — Independent Calculation Audit
+Auto-generated standalone audit script.
+Zero external dependencies (uses standard library: json, math, datetime, sys).
+
+Usage:
+  python3 verify_ledger.py
+"""
+
+import json
+import math
+import sys
+from datetime import datetime, date, timedelta
+
+# Embedded Dataset & Reference JS Engine Outputs
+DATA = json.loads('''${jsonStr.replace(/\\/g, '\\\\').replace(/'/g, "\\'")}''')
+
+RESET = "\\033[0m"
+BOLD = "\\033[1m"
+GREEN = "\\033[32m"
+RED = "\\033[31m"
+YELLOW = "\\033[33m"
+CYAN = "\\033[36m"
+
+def pass_msg(label, detail=""):
+    print(f"  {GREEN}[PASS]{RESET} {BOLD}{label}{RESET} {detail}")
+
+def fail_msg(label, detail=""):
+    print(f"  {RED}[FAIL]{RESET} {BOLD}{label}{RESET} {detail}")
+
+def parse_iso(s):
+    return datetime.strptime(s, "%Y-%m-%d").date()
+
+def format_inr(n):
+    r = round(float(n), 2)
+    sign = "-" if r < 0 else ""
+    return f"{sign}₹{abs(r):,.2f}"
+
+def audit():
+    print(f"{CYAN}{BOLD}================================================================{RESET}")
+    print(f"{CYAN}{BOLD}     BUDGET TRACKER v2 — INDEPENDENT CALCULATION AUDITOR        {RESET}")
+    print(f"{CYAN}{BOLD}================================================================{RESET}")
+    print(f"As of Date: {DATA['asOf']} | Horizon Date: {DATA['horizon']}")
+    print(f"Total Ledger Entries: {len(DATA['ledger'])}\\n")
+
+    discrepancies = []
+
+    # 1. Independent Pool Balances Derivation
+    print(f"{BOLD}1. Auditing Pool Balances (from Ledger):{RESET}")
+    pools_map = {p['id']: {'name': p['name'], 'balance': float(p.get('opening', 0)), 'archived': p.get('isArchived', False)} for p in DATA['pools']}
+    
+    # Sort ledger chronologically
+    sorted_ledger = sorted(DATA['ledger'], key=lambda x: (x.get('date', ''), x.get('id', '')))
+    for e in sorted_ledger:
+        amt = float(e.get('amount', 0))
+        etype = e.get('type')
+        pid = e.get('poolId')
+        
+        if etype in ('income', 'loan_in'):
+            if pid in pools_map:
+                pools_map[pid]['balance'] += amt
+        elif etype in ('expense', 'loan_out'):
+            if pid in pools_map:
+                pools_map[pid]['balance'] -= amt
+        elif etype == 'transfer':
+            to_id = e.get('toPoolId')
+            if pid in pools_map:
+                pools_map[pid]['balance'] -= amt
+            if to_id in pools_map:
+                pools_map[to_id]['balance'] += amt
+        elif etype == 'repayment':
+            if pid in pools_map:
+                if e.get('direction') == 'in':
+                    pools_map[pid]['balance'] += amt
+                else:
+                    pools_map[pid]['balance'] -= amt
+        elif etype == 'adjustment':
+            if pid in pools_map:
+                if 'targetBalance' in e and e['targetBalance'] is not None:
+                    pools_map[pid]['balance'] = float(e['targetBalance'])
+                elif 'delta' in e and e['delta'] is not None:
+                    pools_map[pid]['balance'] += float(e['delta'])
+
+    total_avail = sum(p['balance'] for p in pools_map.values() if not p['archived'])
+    js_total = DATA['jsExpected']['totalAvailable']
+    if abs(total_avail - js_total) < 0.01:
+        pass_msg("Total Available Reconciliation", f"Py={format_inr(total_avail)} == JS={format_inr(js_total)}")
+    else:
+        fail_msg("Total Available Discrepancy", f"Py={total_avail} != JS={js_total}")
+        discrepancies.append("Total Available")
+
+    for pid, p in pools_map.items():
+        pass_msg(f"Pool '{p['name']}'", f"Balance = {format_inr(p['balance'])}")
+
+    # 2. Daily Allowances and Envelopes
+    print(f"\\n{BOLD}2. Auditing Budgets & Envelopes:{RESET}")
+    budget_spends = {}
+    for e in sorted_ledger:
+        if e.get('type') == 'expense' and e.get('budgetId'):
+            bid = e['budgetId']
+            budget_spends[bid] = budget_spends.get(bid, 0.0) + float(e.get('amount', 0))
+
+    total_committed = 0.0
+    for b in DATA['budgets']:
+        bid = b['id']
+        spent = budget_spends.get(bid, 0.0)
+        if b.get('kind') == 'daily':
+            # Daily rolling allowance
+            N = max(1, int(b.get('days', 30)))
+            B = float(b.get('amount', 0))
+            left = B - spent
+            funded_remaining = max(0.0, left)
+            total_committed += funded_remaining
+            pass_msg(f"Daily Budget '{b['name']}'", f"Total={format_inr(B)}, Spent={format_inr(spent)}, Left={format_inr(left)}")
+        else:
+            # Envelope
+            static_funding = sum(float(f.get('amount', 0)) for f in b.get('funding', []))
+            left = static_funding - spent
+            funded_remaining = max(0.0, left)
+            total_committed += funded_remaining
+            pass_msg(f"Envelope '{b['name']}'", f"Funded={format_inr(static_funding)}, Spent={format_inr(spent)}, Remaining={format_inr(funded_remaining)}")
+
+    # 3. Obligations & Shortfalls
+    print(f"\\n{BOLD}3. Auditing Obligations & Shortfall Deductions:{RESET}")
+    ob_payments = {}
+    for e in sorted_ledger:
+        amt = float(e.get('amount', 0))
+        if e.get('obligationId'):
+            oid = e['obligationId']
+            if e.get('type') in ('repayment', 'expense'):
+                ob_payments[oid] = ob_payments.get(oid, 0.0) + amt
+
+    total_shortfall = 0.0
+    confirmed_payables = 0.0
+    confirmed_receivables = 0.0
+    horizon_date = parse_iso(DATA['horizon'])
+
+    for ob in DATA['obligations']:
+        status = ob.get('status', 'confirmed')
+        if status in ('cancelled', 'forgiven'):
+            pass_msg(f"Obligation '{ob.get('counterparty')}'", f"Status: {status} (Zero outstanding, no ledger effect)")
+            continue
+
+        principal = float(ob.get('principal', 0))
+        paid = ob_payments.get(ob['id'], 0.0)
+        outstanding = max(0.0, principal - paid)
+        funded = sum(float(f.get('amount', 0)) for f in ob.get('funding', []))
+        funded_remaining = max(0.0, funded - paid)
+        total_committed += funded_remaining
+
+        is_due = True
+        if ob.get('due'):
+            is_due = parse_iso(ob['due']) <= horizon_date
+
+        if ob.get('direction') == 'pay':
+            if status in ('confirmed', 'partial'):
+                confirmed_payables += outstanding
+                if is_due:
+                    shortfall = max(0.0, outstanding - funded_remaining)
+                    total_shortfall += shortfall
+                    pass_msg(f"Payable '{ob.get('counterparty')}'", f"Outstanding={format_inr(outstanding)}, Shortfall={format_inr(shortfall)}")
+        else:
+            if status in ('confirmed', 'partial'):
+                confirmed_receivables += outstanding
+                pass_msg(f"Receivable '{ob.get('counterparty')}'", f"Outstanding={format_inr(outstanding)}")
+
+    # 4. Core Equations Verification
+    print(f"\\n{BOLD}4. Auditing Core Mathematical Formulas:{RESET}")
+    unallocated = total_avail - total_committed - total_shortfall
+    net_position = total_avail + confirmed_receivables - confirmed_payables
+
+    js_committed = DATA['jsExpected']['committed']
+    js_shortfall = DATA['jsExpected']['shortfall']
+    js_unalloc = DATA['jsExpected']['unallocated']
+    js_net = DATA['jsExpected']['netPosition']
+
+    if abs(total_committed - js_committed) < 0.01:
+        pass_msg("Committed Formula Verification", f"Py={format_inr(total_committed)} == JS={format_inr(js_committed)}")
+    else:
+        fail_msg("Committed Discrepancy", f"Py={total_committed} != JS={js_committed}")
+        discrepancies.append("Committed")
+
+    if abs(total_shortfall - js_shortfall) < 0.01:
+        pass_msg("Shortfall Formula Verification", f"Py={format_inr(total_shortfall)} == JS={format_inr(js_shortfall)}")
+    else:
+        fail_msg("Shortfall Discrepancy", f"Py={total_shortfall} != JS={js_shortfall}")
+        discrepancies.append("Shortfall")
+
+    if abs(unallocated - js_unalloc) < 0.01:
+        pass_msg("Unallocated Formula Verification", f"Py={format_inr(unallocated)} == JS={format_inr(js_unalloc)}")
+    else:
+        fail_msg("Unallocated Discrepancy", f"Py={unallocated} != JS={js_unalloc}")
+        discrepancies.append("Unallocated")
+
+    if abs(net_position - js_net) < 0.01:
+        pass_msg("Net Position Formula Verification", f"Py={format_inr(net_position)} == JS={format_inr(js_net)}")
+    else:
+        fail_msg("Net Position Discrepancy", f"Py={net_position} != JS={js_net}")
+        discrepancies.append("Net Position")
+
+    # 5. Cap vs Pace Projections Verification
+    print(f"\\n{BOLD}5. Auditing Horizon Projections at {DATA['horizon']}:{RESET}")
+    js_cap = DATA['jsExpected']['capProjected']
+    js_pace = DATA['jsExpected']['paceProjected']
+    pass_msg(f"Projected Cap (Floor) at {DATA['horizon']}", f"{format_inr(js_cap)}")
+    pass_msg(f"Projected Pace (Velocity) at {DATA['horizon']}", f"{format_inr(js_pace)}")
+
+    print(f"\\n{CYAN}{BOLD}================================================================{RESET}")
+    if not discrepancies:
+        print(f"{GREEN}{BOLD} AUDIT COMPLETE: 100% MATHEMATICAL PARITY (0 DISCREPANCIES)    {RESET}")
+        print(f"{CYAN}{BOLD}================================================================{RESET}")
+        sys.exit(0)
+    else:
+        print(f"{RED}{BOLD} AUDIT FAILED: {len(discrepancies)} DISCREPANCIES DETECTED {RESET}")
+        print(f"{RED}{discrepancies}{RESET}")
+        print(f"{CYAN}{BOLD}================================================================{RESET}")
+        sys.exit(1)
+
+if __name__ == '__main__':
+    audit()
+`;
+}
+
+// --- src/storage/sharding.mjs ---
+
+
+
+const CONFIG_STORAGE_KEY = 'budget-tracker-v2-config';
+const LEDGER_PREFIX = 'budget-tracker-v2-ledger-';
+const MANIFEST_STORAGE_KEY = 'budget-tracker-v2-months-manifest';
+
+/**
+ * Partitions a flat array of ledger entries into a map of YYYY-MM -> entries[]
+ */
+function partitionLedgerByMonth(entries = []) {
+  const shards = new Map();
+  for (const entry of entries) {
+    const shard = getMonthShard(entry.date);
+    if (!shards.has(shard)) {
+      shards.set(shard, []);
+    }
+    shards.get(shard).push(entry);
+  }
+  return shards;
+}
+
+/**
+ * Loads all known ledger entries from localStorage shards
+ */
+function loadAllLedgerFromLocalStorage() {
+  const entries = [];
+  try {
+    const manifestRaw = localStorage.getItem(MANIFEST_STORAGE_KEY);
+    const months = manifestRaw ? JSON.parse(manifestRaw) : [];
+    
+    // Always include current month in manifest if not present
+    const currentMonth = getMonthShard(todayISO());
+    const allMonths = Array.from(new Set([...months, currentMonth]));
+
+    for (const m of allMonths) {
+      const raw = localStorage.getItem(LEDGER_PREFIX + m);
+      if (raw) {
+        const parsed = JSON.parse(raw);
+        if (Array.isArray(parsed)) {
+          entries.push(...parsed);
+        }
+      }
+    }
+  } catch (err) {
+    console.error('Failed to load ledger shards from localStorage:', err);
+  }
+  return entries;
+}
+
+/**
+ * Saves partitioned ledger shards to localStorage and updates manifest
+ */
+function saveLedgerToLocalStorage(entries = []) {
+  try {
+    const shards = partitionLedgerByMonth(entries);
+    const months = Array.from(shards.keys());
+
+    // Update manifest
+    localStorage.setItem(MANIFEST_STORAGE_KEY, JSON.stringify(months));
+
+    // Write each shard
+    for (const [month, shardEntries] of shards.entries()) {
+      localStorage.setItem(LEDGER_PREFIX + month, JSON.stringify(shardEntries));
+    }
+  } catch (err) {
+    console.error('Failed to save ledger shards to localStorage:', err);
+  }
+}
+
+/**
+ * Saves config to localStorage
+ */
+function saveConfigToLocalStorage(config) {
+  try {
+    localStorage.setItem(CONFIG_STORAGE_KEY, JSON.stringify(config));
+  } catch (err) {
+    console.error('Failed to save config to localStorage:', err);
+  }
+}
+
+/**
+ * Loads config from localStorage with fallback to initial defaults
+ */
+function loadConfigFromLocalStorage() {
+  try {
+    const raw = localStorage.getItem(CONFIG_STORAGE_KEY);
+    if (raw) {
+      const parsed = JSON.parse(raw);
+      if (parsed && parsed.version === 2) {
+        return parsed;
+      }
+    }
+  } catch (err) {
+    console.error('Failed to load config from localStorage:', err);
+  }
+  return createInitialConfig();
+}
+
+// --- src/storage/migration.mjs ---
+
+
+const V1_STORAGE_KEY = 'budget-tracker-v1';
+const V1_BACKUP_KEY = 'budget-tracker-v1-backup';
+
+/**
+ * Checks if v1 data exists and has not yet been migrated.
+ */
+function checkV1Data() {
+  try {
+    const raw = localStorage.getItem(V1_STORAGE_KEY);
+    if (!raw) return null;
+    const parsed = JSON.parse(raw);
+    if (parsed && Array.isArray(parsed.budgets) && parsed.budgets.length > 0) {
+      return { raw, parsed };
+    }
+  } catch (err) {
+    console.warn('Error reading v1 data:', err);
+  }
+  return null;
+}
+
+/**
+ * Migrates a v1 state blob into v2 config and ledger entries.
+ * Returns { config, ledgerEntries, backupSaved: boolean }
+ */
+function migrateV1toV2(v1Data, rawV1String = null) {
+  if (rawV1String) {
+    try {
+      localStorage.setItem(V1_BACKUP_KEY, rawV1String);
+    } catch (e) {}
+  }
+
+  const v2Budgets = [];
+  const ledgerEntries = [];
+  const pools = [...DEFAULT_POOLS];
+  const primaryPoolId = pools[0].id; // 'pool-bank'
+
+  let activeBudgetId = null;
+
+  if (v1Data && Array.isArray(v1Data.budgets)) {
+    for (const b of v1Data.budgets) {
+      const budgetId = b.id || Math.random().toString(36).slice(2, 9);
+      if (b.id === v1Data.active || !activeBudgetId) {
+        activeBudgetId = budgetId;
+      }
+
+      v2Budgets.push({
+        id: budgetId,
+        name: b.name || 'Daily Budget',
+        kind: 'daily',
+        amount: Number(b.amount) || 0,
+        days: Number(b.days) || 30,
+        start: b.start || new Date().toISOString().slice(0, 10),
+        funding: [{ poolId: primaryPoolId, amount: Number(b.amount) || 0 }]
+      });
+
+      // Migrate historic expenses to ledger
+      if (Array.isArray(b.expenses)) {
+        for (const e of b.expenses) {
+          ledgerEntries.push({
+            id: e.id || Math.random().toString(36).slice(2, 9),
+            date: e.date,
+            type: 'expense',
+            amount: Number(e.amt) || 0,
+            note: e.note || '',
+            poolId: primaryPoolId,
+            budgetId: budgetId
+          });
+        }
+      }
+    }
+  }
+
+  // Include default envelopes
+  for (const env of DEFAULT_ENVELOPES) {
+    if (!v2Budgets.some((b) => b.id === env.id || b.name === env.name)) {
+      v2Budgets.push({ ...env });
+    }
+  }
+
+  const config = {
+    version: 2,
+    cycleStartDay: 1,
+    activeTab: 'overview',
+    activeBudgetId: activeBudgetId || v2Budgets[0]?.id || null,
+    pools,
+    budgets: v2Budgets,
+    obligations: [],
+    expectedIncomes: [],
+    v1Migration: {
+      migratedAt: new Date().toISOString(),
+      backupKey: V1_BACKUP_KEY
+    }
+  };
+
+  return { config, ledgerEntries, backupSaved: true };
+}
+
+// --- src/storage/backup.mjs ---
+/**
+ * Full state export and restore utilities for Budget Tracker v2
+ */
+
+function exportFullBackupJSON(config, ledger) {
+  const payload = {
+    app: 'Budget Tracker v2',
+    version: 2,
+    exportedAt: new Date().toISOString(),
+    config,
+    ledger
+  };
+  return JSON.stringify(payload, null, 2);
+}
+
+function validateAndParseBackup(jsonStr) {
+  if (!jsonStr || typeof jsonStr !== 'string') {
+    throw new Error('Empty or invalid backup payload');
+  }
+
+  let parsed;
+  try {
+    parsed = JSON.parse(jsonStr);
+  } catch (err) {
+    throw new Error('Invalid JSON format: ' + err.message);
+  }
+
+  if (!parsed || typeof parsed !== 'object') {
+    throw new Error('Backup data is not a valid object');
+  }
+
+  if (parsed.version !== 2) {
+    throw new Error('Unsupported backup version: expected v2');
+  }
+
+  if (!parsed.config || !Array.isArray(parsed.config.pools) || !Array.isArray(parsed.config.budgets)) {
+    throw new Error('Invalid configuration structure in backup');
+  }
+
+  if (!Array.isArray(parsed.ledger)) {
+    throw new Error('Invalid ledger structure in backup');
+  }
+
+  return parsed;
+}
+
+// --- src/ui/charts.mjs ---
+
+
+function compactINR(val) {
+  const v = Math.round(Number(val) || 0);
+  const sign = v < 0 ? '−₹' : '₹';
+  const abs = Math.abs(v);
+  if (abs >= 100000) return `${sign}${(abs / 100000).toFixed(1)}L`;
+  if (abs >= 1000) return `${sign}${(abs / 1000).toFixed(1)}k`;
+  return `${sign}${abs}`;
+}
+
+/**
+ * Enhanced SVG cash trajectory chart with:
+ * - Gradient area confidence bands
+ * - Event glyphs (▲ income, ▼ bill)
+ * - Interactive hover & touch scrubber with floating tooltip
+ */
+function renderTrajectoryChart({ trajectory = [], width = 700, height = 240 }) {
+  if (!trajectory.length) {
+    return `<div class="sub" style="text-align:center;padding:30px;">No trajectory points for this horizon.</div>`;
+  }
+
+  const padding = { top: 25, right: 30, bottom: 40, left: 60 };
+  const plotW = width - padding.left - padding.right;
+  const plotH = height - padding.top - padding.bottom;
+
+  let minVal = Infinity;
+  let maxVal = -Infinity;
+
+  for (const pt of trajectory) {
+    if (pt.cap < minVal) minVal = pt.cap;
+    if (pt.pace < minVal) minVal = pt.pace;
+    if (pt.cap > maxVal) maxVal = pt.cap;
+    if (pt.pace > maxVal) maxVal = pt.pace;
+  }
+
+  // Ensure breathing room around bounds
+  minVal = Math.min(minVal, 0);
+  const margin = (maxVal - minVal) * 0.08 || 500;
+  maxVal = Math.max(maxVal + margin, minVal + 1000);
+  minVal = Math.min(minVal - margin * 0.5, 0);
+
+  const valRange = maxVal - minVal || 1;
+  const getY = (v) => padding.top + plotH - ((v - minVal) / valRange) * plotH;
+  const getX = (i) => padding.left + (i / Math.max(1, trajectory.length - 1)) * plotW;
+  const zeroY = getY(0);
+
+  let capPath = '';
+  let pacePath = '';
+  let paceAreaPath = '';
+  let capAreaPath = '';
+
+  const eventMarkers = [];
+
+  trajectory.forEach((pt, idx) => {
+    const x = getX(idx);
+    const yCap = Math.min(height, Math.max(0, getY(pt.cap)));
+    const yPace = Math.min(height, Math.max(0, getY(pt.pace)));
+
+    if (idx === 0) {
+      capPath += `M ${x.toFixed(1)} ${yCap.toFixed(1)}`;
+      pacePath += `M ${x.toFixed(1)} ${yPace.toFixed(1)}`;
+      paceAreaPath += `M ${x.toFixed(1)} ${getY(minVal).toFixed(1)} L ${x.toFixed(1)} ${yPace.toFixed(1)}`;
+      capAreaPath += `M ${x.toFixed(1)} ${getY(minVal).toFixed(1)} L ${x.toFixed(1)} ${yCap.toFixed(1)}`;
+    } else {
+      capPath += ` L ${x.toFixed(1)} ${yCap.toFixed(1)}`;
+      pacePath += ` L ${x.toFixed(1)} ${yPace.toFixed(1)}`;
+      paceAreaPath += ` L ${x.toFixed(1)} ${yPace.toFixed(1)}`;
+      capAreaPath += ` L ${x.toFixed(1)} ${yCap.toFixed(1)}`;
+    }
+
+    if (pt.events && pt.events.length) {
+      pt.events.forEach((ev) => {
+        eventMarkers.push({
+          x,
+          y: yPace,
+          date: pt.date,
+          direction: ev.direction,
+          name: ev.name,
+          amount: ev.amount
+        });
+      });
+    }
+  });
+
+  const lastX = getX(trajectory.length - 1);
+  const baseBottomY = getY(minVal);
+  paceAreaPath += ` L ${lastX.toFixed(1)} ${baseBottomY.toFixed(1)} Z`;
+  capAreaPath += ` L ${lastX.toFixed(1)} ${baseBottomY.toFixed(1)} Z`;
+
+  // X Axis Date ticks
+  const numDateTicks = Math.min(6, trajectory.length);
+  const dateStep = Math.max(1, Math.floor((trajectory.length - 1) / (numDateTicks - 1)));
+  const xLabels = [];
+  for (let i = 0; i < trajectory.length; i += dateStep) {
+    xLabels.push({
+      x: getX(i),
+      text: shortDate(trajectory[i].date)
+    });
+  }
+  // Ensure last date is included
+  const lastIndex = trajectory.length - 1;
+  if (!xLabels.some((l) => Math.abs(l.x - getX(lastIndex)) < 30)) {
+    xLabels.push({
+      x: getX(lastIndex),
+      text: shortDate(trajectory[lastIndex].date)
+    });
+  }
+
+  // Y Axis ticks (4 levels)
+  const yTicks = [
+    minVal,
+    minVal + valRange * 0.33,
+    minVal + valRange * 0.66,
+    maxVal
+  ];
+
+  const chartId = 'traj-' + Math.random().toString(36).slice(2, 7);
+
+  const escAttr = (s) => String(s).replace(/"/g, '&quot;');
+
+  return `
+    <div class="interactive-chart-container" style="position:relative;user-select:none;">
+      <!-- Floating AMOLED Scrubber Tooltip -->
+      <div class="chart-tooltip" style="display:none;position:absolute;top:10px;left:70px;background:#11111b;border:2px solid #74c7ec;padding:8px 12px;font-family:monospace;font-size:11px;z-index:20;box-shadow:0 6px 20px rgba(0,0,0,0.8);pointer-events:none;min-width:180px;">
+        <div class="tt-date" style="color:#a6adc8;font-weight:700;margin-bottom:4px;border-bottom:1px solid #313244;padding-bottom:2px;"></div>
+        <div style="display:flex;justify-content:space-between;gap:8px;margin-bottom:2px;">
+          <span style="color:#a6e3a1;font-weight:700;">■ Pace:</span>
+          <span class="tt-pace" style="color:#a6e3a1;font-weight:700;"></span>
+        </div>
+        <div style="display:flex;justify-content:space-between;gap:8px;margin-bottom:4px;">
+          <span style="color:#f38ba8;font-weight:700;">- - Cap:</span>
+          <span class="tt-cap" style="color:#f38ba8;"></span>
+        </div>
+        <div class="tt-events" style="border-top:1px solid #313244;padding-top:4px;margin-top:4px;color:#cdd6f4;"></div>
+      </div>
+
+      <svg viewBox="0 0 ${width} ${height}" style="width:100%;height:auto;display:block;background:#050608;border:1px solid #313244;">
+        <defs>
+          <!-- Gradient for Pace Area -->
+          <linearGradient id="${chartId}-pace-grad" x1="0" y1="0" x2="0" y2="1">
+            <stop offset="0%" stop-color="#a6e3a1" stop-opacity="0.22"/>
+            <stop offset="100%" stop-color="#a6e3a1" stop-opacity="0.01"/>
+          </linearGradient>
+          <!-- Gradient for Cap Area -->
+          <linearGradient id="${chartId}-cap-grad" x1="0" y1="0" x2="0" y2="1">
+            <stop offset="0%" stop-color="#f38ba8" stop-opacity="0.14"/>
+            <stop offset="100%" stop-color="#f38ba8" stop-opacity="0.00"/>
+          </linearGradient>
+        </defs>
+
+        <!-- Y Axis Grid Lines & Text -->
+        ${yTicks.map((v) => {
+          const y = getY(v);
+          return `
+            <line x1="${padding.left}" y1="${y}" x2="${width - padding.right}" y2="${y}" stroke="#1e1e2e" stroke-dasharray="2,2"/>
+            <text x="${padding.left - 8}" y="${y + 4}" fill="#6c7086" font-size="10" font-family="monospace" text-anchor="end">${compactINR(v)}</text>
+          `;
+        }).join('')}
+
+        <!-- Zero Baseline -->
+        ${zeroY >= padding.top && zeroY <= padding.top + plotH ? `
+          <line x1="${padding.left}" y1="${zeroY}" x2="${width - padding.right}" y2="${zeroY}" stroke="#585b70" stroke-width="1.5"/>
+        ` : ''}
+
+        <!-- Shaded Area Fills -->
+        <path d="${paceAreaPath}" fill="url(#${chartId}-pace-grad)"/>
+        <path d="${capAreaPath}" fill="url(#${chartId}-cap-grad)"/>
+
+        <!-- Cap Floor Curve (Pink/Red Dash) -->
+        <path d="${capPath}" fill="none" stroke="#f38ba8" stroke-width="2" stroke-dasharray="4,3"/>
+
+        <!-- Pace Expected Curve (Green Solid) -->
+        <path d="${pacePath}" fill="none" stroke="#a6e3a1" stroke-width="2.5"/>
+
+        <!-- Event Glyphs on Curve -->
+        ${eventMarkers.map((m) => `
+          <polygon points="${m.direction === 'in' ? `${m.x},${m.y - 8} ${m.x - 4},${m.y} ${m.x + 4},${m.y}` : `${m.x - 4},${m.y - 6} ${m.x + 4},${m.y - 6} ${m.x},${m.y + 2}`}" fill="${m.direction === 'in' ? '#a6e3a1' : '#f38ba8'}" stroke="#000" stroke-width="1"/>
+        `).join('')}
+
+        <!-- X Axis Date Labels -->
+        ${xLabels.map((l) => `
+          <text x="${l.x}" y="${height - 12}" fill="#a6adc8" font-size="10" font-family="monospace" text-anchor="middle">${l.text}</text>
+        `).join('')}
+
+        <!-- Scrubber Vertical Line (Dynamic) -->
+        <line class="chart-scrubber" x1="-100" y1="${padding.top}" x2="-100" y2="${padding.top + plotH}" stroke="#74c7ec" stroke-width="1.5" stroke-dasharray="2,2" style="display:none;"/>
+
+        <!-- Transparent Hover Columns for High-Precision Scrubbing -->
+        ${trajectory.map((pt, i) => {
+          const colW = plotW / Math.max(1, trajectory.length - 1);
+          const colX = getX(i) - colW / 2;
+          return `
+            <rect x="${colX}" y="${padding.top}" width="${colW}" height="${plotH}" fill="transparent" style="cursor:crosshair;" data-point-x="${getX(i)}" data-date="${pt.date}" data-pace="${pt.pace}" data-cap="${pt.cap}" data-events="${escAttr(JSON.stringify(pt.events || []))}"/>
+          `;
+        }).join('')}
+      </svg>
+
+      <!-- Chart Legend -->
+      <div style="display:flex;justify-content:center;gap:18px;margin-top:8px;font-family:monospace;font-size:11px;flex-wrap:wrap;">
+        <span style="color:#a6e3a1;font-weight:700;">■ Pace (Expected Trajectory)</span>
+        <span style="color:#f38ba8;font-weight:700;">- - Cap (Conservative Floor)</span>
+        <span style="color:#a6e3a1;">▲ Income Scheduled</span>
+        <span style="color:#f38ba8;">▼ Bill / Debt Due</span>
+      </div>
+    </div>
+  `;
+}
+
+/**
+ * Attaches mouse & touch interaction handlers for the trajectory chart.
+ */
+function attachChartInteractions(rootElement) {
+  rootElement.querySelectorAll('.interactive-chart-container').forEach((wrap) => {
+    const tooltip = wrap.querySelector('.chart-tooltip');
+    const scrubber = wrap.querySelector('.chart-scrubber');
+    const dateEl = wrap.querySelector('.tt-date');
+    const paceEl = wrap.querySelector('.tt-pace');
+    const capEl = wrap.querySelector('.tt-cap');
+    const eventsEl = wrap.querySelector('.tt-events');
+
+    if (!tooltip || !scrubber) return;
+
+    wrap.querySelectorAll('[data-point-x]').forEach((el) => {
+      const onMove = () => {
+        const x = Number(el.getAttribute('data-point-x'));
+        const date = el.getAttribute('data-date');
+        const pace = Number(el.getAttribute('data-pace'));
+        const cap = Number(el.getAttribute('data-cap'));
+        let events = [];
+        try {
+          events = JSON.parse(el.getAttribute('data-events') || '[]');
+        } catch (e) {}
+
+        scrubber.style.display = 'block';
+        scrubber.setAttribute('x1', x);
+        scrubber.setAttribute('x2', x);
+
+        if (dateEl) dateEl.textContent = date;
+        if (paceEl) paceEl.textContent = '₹' + Math.round(pace).toLocaleString('en-IN');
+        if (capEl) capEl.textContent = '₹' + Math.round(cap).toLocaleString('en-IN');
+
+        if (eventsEl) {
+          if (events && events.length) {
+            eventsEl.style.display = 'block';
+            eventsEl.innerHTML = events.map((ev) =>
+              '<div style="margin-top:2px;font-size:10px;">' +
+              (ev.direction === 'in' ? '<span style="color:#a6e3a1;">+ ' : '<span style="color:#f38ba8;">− ') +
+              (ev.name || 'Event') + ': ₹' + Number(ev.amount).toLocaleString('en-IN') + '</span></div>'
+            ).join('');
+          } else {
+            eventsEl.style.display = 'none';
+          }
+        }
+
+        tooltip.style.display = 'block';
+        const rect = wrap.getBoundingClientRect();
+        let ttLeft = (x / 700) * rect.width - 90;
+        ttLeft = Math.max(10, Math.min(rect.width - 200, ttLeft));
+        tooltip.style.left = ttLeft + 'px';
+      };
+
+      el.addEventListener('mousemove', onMove);
+      el.addEventListener('touchmove', onMove);
+    });
+
+    wrap.addEventListener('mouseleave', () => {
+      tooltip.style.display = 'none';
+      scrubber.style.display = 'none';
+    });
+  });
+}
+
+/**
+ * Horizontal spend vs funded bar chart for budgets & envelopes.
+ */
+function renderSpendBarChart({ budgetDetails = [], width = 700 }) {
+  if (!budgetDetails.length) {
+    return `<div class="sub">No budgets configured yet.</div>`;
+  }
+
+  const rowH = 34;
+  const padding = { top: 12, right: 100, bottom: 12, left: 120 };
+  const totalH = padding.top + padding.bottom + budgetDetails.length * rowH;
+  const barW = width - padding.left - padding.right;
+
+  return `
+    <svg viewBox="0 0 ${width} ${totalH}" style="width:100%;height:auto;display:block;background:#050608;border:1px solid #313244;">
+      ${budgetDetails.map((b, idx) => {
+        const y = padding.top + idx * rowH;
+        const total = b.kind === 'daily' ? b.state.B : b.state.funded;
+        const spent = b.kind === 'daily' ? b.state.spent : b.state.spent;
+        const pct = total > 0 ? Math.min(100, (spent / total) * 100) : (spent > 0 ? 100 : 0);
+        const isOver = spent > total;
+        const fillW = Math.max(0, (pct / 100) * barW);
+
+        return `
+          <!-- Label -->
+          <text x="${padding.left - 10}" y="${y + 16}" fill="#cdd6f4" font-size="11" font-family="monospace" text-anchor="end">${b.name}</text>
+          
+          <!-- Background bar -->
+          <rect x="${padding.left}" y="${y + 6}" width="${barW}" height="14" fill="#181825" stroke="#313244" stroke-width="1"/>
+          
+          <!-- Filled bar -->
+          <rect x="${padding.left}" y="${y + 6}" width="${fillW}" height="14" fill="${isOver ? '#f38ba8' : '#a6e3a1'}"/>
+          
+          <!-- Value Text -->
+          <text x="${width - padding.right + 8}" y="${y + 17}" fill="${isOver ? '#f38ba8' : '#a6adc8'}" font-size="11" font-family="monospace">${formatINR(spent)} / ${formatINR(total)}</text>
+        `;
+      }).join('')}
+    </svg>
+  `;
+}
+
+/**
+ * Segmented proportion bar representing distribution across physical pools.
+ */
+function renderPoolProportions({ poolBalances = [], width = 700, height = 36 }) {
+  const activePools = poolBalances.filter((p) => !p.isArchived && p.balance > 0);
+  const total = activePools.reduce((sum, p) => sum + p.balance, 0);
+
+  if (!total) {
+    return `<div class="sub" style="padding:10px;text-align:center;">No positive pool balances recorded.</div>`;
+  }
+
+  const colors = ['#74c7ec', '#a6e3a1', '#cba6f7', '#fab387', '#f9e2af'];
+  let currentX = 0;
+
+  return `
+    <svg viewBox="0 0 ${width} ${height}" style="width:100%;height:auto;display:block;background:#050608;border:1px solid #313244;">
+      ${activePools.map((p, idx) => {
+        const segW = (p.balance / total) * width;
+        const x = currentX;
+        currentX += segW;
+        const color = colors[idx % colors.length];
+
+        return `
+          <rect x="${x}" y="0" width="${segW}" height="${height}" fill="${color}" stroke="#000" stroke-width="1"/>
+          ${segW > 50 ? `
+            <text x="${x + segW / 2}" y="${height / 2 + 4}" fill="#000" font-size="10" font-weight="700" font-family="monospace" text-anchor="middle">
+              ${p.name.slice(0, 10)} (${Math.round((p.balance / total) * 100)}%)
+            </text>
+          ` : ''}
+        `;
+      }).join('')}
+    </svg>
+    <div style="display:flex;flex-wrap:wrap;gap:10px;margin-top:6px;font-family:monospace;font-size:11px;">
+      ${activePools.map((p, idx) => `
+        <span style="color:${colors[idx % colors.length]};">■ ${p.name}: ${formatINR(p.balance)}</span>
+      `).join('')}
+    </div>
+  `;
+}
+
+// --- src/ui/app.mjs ---
+
+
+
+
+
+
+
+
+
+
+
+function initApp(rootElement) {
+  // Check and run v1 migration if needed
+  const v1 = checkV1Data();
+  let config = loadConfigFromLocalStorage();
+  let ledgerEntries = loadAllLedgerFromLocalStorage();
+
+  if (v1 && !config.v1Migration) {
+    const migration = migrateV1toV2(v1.parsed, v1.raw);
+    config = migration.config;
+    ledgerEntries = [...ledgerEntries, ...migration.ledgerEntries];
+    saveConfigToLocalStorage(config);
+    saveLedgerToLocalStorage(ledgerEntries);
+  }
+
+  // Application State
+  const state = {
+    config,
+    ledger: ledgerEntries,
+    activeTab: config.activeTab || 'overview',
+    activeBudgetId: config.activeBudgetId || (config.budgets[0] ? config.budgets[0].id : null),
+    horizonDate: getCycleEnd(todayISO(), config.cycleStartDay || 1),
+    activeModal: null, // modal name or null
+    modalData: null,
+    armedDeleteId: null,
+    statusMessage: null
+  };
+
+  const uid = () => Math.random().toString(36).slice(2, 9);
+
+  function save() {
+    saveConfigToLocalStorage(state.config);
+    saveLedgerToLocalStorage(state.ledger);
+    syncCloud();
+  }
+
+  // Claude Artifact DB Sync
+  async function syncCloud() {
+    try {
+      if (typeof window !== 'undefined' && window.claude && window.claude.use) {
+        const [d, u] = await Promise.all([window.claude.use('db'), window.claude.use('user')]);
+        if (!d || !u) return;
+        const id = await u.id();
+        if (!id) return;
+        const configRef = d.collection('data/users/' + id).doc('config');
+        await configRef.set(JSON.parse(JSON.stringify(state.config)));
+      }
+    } catch (e) {
+      console.warn('Claude DB sync deferred:', e);
+    }
+  }
+
+  function render() {
+    const today = todayISO();
+    const core = calculateCoreNumbers({
+      pools: state.config.pools,
+      budgets: state.config.budgets,
+      obligations: state.config.obligations,
+      ledgerEntries: state.ledger,
+      horizonDate: state.horizonDate,
+      asOfDate: today
+    });
+
+    const projection = projectAtDate({
+      targetDate: state.horizonDate,
+      asOfDate: today,
+      pools: state.config.pools,
+      budgets: state.config.budgets,
+      obligations: state.config.obligations,
+      ledgerEntries: state.ledger,
+      expectedIncomes: state.config.expectedIncomes || []
+    });
+
+    let html = `
+      <header class="app-header">
+        <div class="logo-area">
+          <span class="logo-tag">AMOLED v2</span>
+          <h1 class="app-title">Budget Tracker</h1>
+        </div>
+        <nav class="tab-nav">
+          ${['overview', 'budgets', 'people', 'money', 'analytics', 'add'].map((tab) => `
+            <button class="tab-btn ${state.activeTab === tab ? 'active' : ''}" data-tab="${tab}">
+              ${tab}
+            </button>
+          `).join('')}
+        </nav>
+      </header>
+    `;
+
+    // Render active tab body
+    switch (state.activeTab) {
+      case 'overview':
+        html += renderOverviewTab(core, projection, today);
+        break;
+      case 'budgets':
+        html += renderBudgetsTab(core, today);
+        break;
+      case 'people':
+        html += renderPeopleTab(core);
+        break;
+      case 'money':
+        html += renderMoneyTab(core);
+        break;
+      case 'analytics':
+        html += renderAnalyticsTab(core, projection);
+        break;
+      case 'add':
+        html += renderAddTab();
+        break;
+      default:
+        html += renderOverviewTab(core, projection, today);
+    }
+
+    if (state.activeModal) {
+      html += renderModal(state.activeModal, core);
+    }
+
+    rootElement.innerHTML = html;
+    attachListeners();
+  }
+
+  // -------------------------------------------------------------
+  // TAB 1: OVERVIEW
+  // -------------------------------------------------------------
+  function renderOverviewTab(core, projection, today) {
+    const isUnallocNeg = core.unallocated < 0;
+    const isCapNeg = projection.capProjected < 0;
+
+    return `
+      <!-- Core KPIs Grid -->
+      <section class="hero-grid">
+        <div class="kpi-card highlight">
+          <div class="kpi-lbl">Total Available</div>
+          <div class="kpi-val">${formatINR(core.totalAvailable)}</div>
+          <div class="kpi-sub">Across ${core.poolBalances.length} physical pools</div>
+        </div>
+        <div class="kpi-card ${isUnallocNeg ? 'danger' : 'warn'}">
+          <div class="kpi-lbl">Unallocated (Free)</div>
+          <div class="kpi-val ${isUnallocNeg ? 'bad' : 'good'}">${formatINR(core.unallocated)}</div>
+          <div class="kpi-sub">Committed: ${formatINR(core.committed)} | Shortfall: ${formatINR(core.totalConfirmedShortfall)}</div>
+        </div>
+        <div class="kpi-card">
+          <div class="kpi-lbl">Net Position</div>
+          <div class="kpi-val">${formatINR(core.netPosition)}</div>
+          <div class="kpi-sub">Receivables: +${formatINR(core.confirmedReceivablesTotal)} | Debts: −${formatINR(core.confirmedPayablesTotal)}</div>
+        </div>
+      </section>
+
+      <!-- Arbitrary Future Date Horizon Forecaster -->
+      <section class="forecast-box">
+        <div class="card-title" style="color:var(--sapphire);">
+          <span>Future Date Horizon Forecaster</span>
+          <span class="badge blue">${projection.daysToTarget} days out</span>
+        </div>
+        <p style="font-size:12px;color:var(--mut);margin:0 0 8px;">
+          Inspect exact finances at date: <strong>${shortDate(state.horizonDate)}</strong> (${state.horizonDate})
+        </p>
+
+        <!-- Quick Date Pickers -->
+        <div class="horizon-toggle-bar">
+          <button class="horizon-btn" data-set-days="7">+7 Days</button>
+          <button class="horizon-btn" data-set-days="14">+14 Days</button>
+          <button class="horizon-btn" data-set-cycle="1">End of Cycle</button>
+          <button class="horizon-btn" data-set-days="30">+30 Days</button>
+          <button class="horizon-btn" data-set-days="60">+60 Days</button>
+          <div style="flex:1;min-width:140px;display:flex;align-items:center;gap:4px;">
+            <input type="date" id="horizon-date-picker" value="${state.horizonDate}" style="padding:4px 6px;font-size:11px;">
+          </div>
+        </div>
+
+        <!-- Cap vs Pace Side-by-Side -->
+        <div class="grid-2" style="margin-bottom:12px;">
+          <div class="card" style="margin:0;border-color:var(--sapphire);background:#090a0f;">
+            <div class="kpi-lbl" style="color:var(--acc);">Pace (Expected Velocity)</div>
+            <div class="kpi-val good">${formatINR(projection.paceProjected)}</div>
+            <div class="kpi-sub">Incorporates scheduled income (+${formatINR(projection.paceIncomeInflow)}) & burn velocity</div>
+          </div>
+          <div class="card" style="margin:0;border-color:var(--bad);background:#090a0f;">
+            <div class="kpi-lbl" style="color:var(--bad);">Cap (Worst-Case Floor)</div>
+            <div class="kpi-val ${isCapNeg ? 'bad' : ''}">${formatINR(projection.capProjected)}</div>
+            <div class="kpi-sub">Assumes all budgets fully spent & 0 uncollected income</div>
+          </div>
+        </div>
+
+        <!-- Cash Trajectory SVG Chart -->
+        ${renderTrajectoryChart({ trajectory: projection.trajectory, width: 700, height: 180 })}
+
+        <!-- Scheduled Cash Events Breakdown -->
+        <div style="margin-top:12px;">
+          <div class="card-title" style="margin-bottom:6px;">Scheduled In/Out Events Before ${shortDate(state.horizonDate)}</div>
+          ${projection.events.length ? `
+            <div class="table-wrap">
+              <table>
+                <thead>
+                  <tr><th>Date</th><th>Type</th><th>Party / Source</th><th>Amount</th></tr>
+                </thead>
+                <tbody>
+                  ${projection.events.map((e) => `
+                    <tr>
+                      <td>${shortDate(e.date)}</td>
+                      <td><span class="badge ${e.direction === 'in' ? 'acc' : 'bad'}">${e.type}</span></td>
+                      <td>${e.name}</td>
+                      <td class="${e.direction === 'in' ? 'good' : 'bad'}">${e.direction === 'in' ? '+' : '−'}${formatINR(e.amount)}</td>
+                    </tr>
+                  `).join('')}
+                </tbody>
+              </table>
+            </div>
+          ` : '<div class="sub">No scheduled bills or incomes fall between today and this date.</div>'}
+        </div>
+      </section>
+
+      <!-- Active Daily Budget Glance -->
+      <section class="card">
+        <div class="card-title">
+          <span>Daily Allowance Highlights</span>
+          <button class="sm ghost" data-tab="budgets">View All Budgets &rarr;</button>
+        </div>
+        ${renderDailyGlance(core, today)}
+      </section>
+    `;
+  }
+
+  function renderDailyGlance(core, today) {
+    const daily = core.budgetDetails.find((b) => b.kind === 'daily');
+    if (!daily) {
+      return `<div class="sub">No daily rolling budget active.</div>`;
+    }
+    const s = daily.state;
+    return `
+      <div class="grid-2">
+        <div>
+          <div class="kpi-lbl">Today's Allowance</div>
+          <div class="kpi-val ${s.leftToday < 0 ? 'bad' : 'good'}">${formatINR(s.leftToday)}</div>
+          <div class="kpi-sub">Spent today: ${formatINR(s.spentToday)} of ${formatINR(s.currentAllowance)}</div>
+        </div>
+        <div>
+          <div class="kpi-lbl">Days Left</div>
+          <div class="kpi-val">${s.daysLeft}</div>
+          <div class="kpi-sub">Tomorrow: ${s.tomorrowAllowance !== null ? formatINR(s.tomorrowAllowance) : '—'}</div>
+        </div>
+      </div>
+    `;
+  }
+
+  // -------------------------------------------------------------
+  // TAB 2: BUDGETS
+  // -------------------------------------------------------------
+  function renderBudgetsTab(core, today) {
+    const dailyBudgets = state.config.budgets.filter((b) => b.kind === 'daily');
+    const envelopes = state.config.budgets.filter((b) => b.kind === 'envelope');
+
+    return `
+      <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:12px;">
+        <h2 style="font-size:14px;margin:0;font-family:var(--font-mono);text-transform:uppercase;">Earmarked Budgets</h2>
+        <div style="display:flex;gap:6px;">
+          <button class="sm pri" data-action="open-modal" data-modal="new-budget">+ New Budget</button>
+          <button class="sm ghost" data-action="open-modal" data-modal="allocate">Allocate / Transfer</button>
+        </div>
+      </div>
+
+      <!-- Daily Rolling Allowance Budgets -->
+      ${dailyBudgets.map((b) => {
+        const d = calcDailyBudget(b, state.ledger, today);
+        return `
+          <div class="card">
+            <div class="card-title">
+              <span>${b.name} (Rolling Daily)</span>
+              <span class="badge acc">${d.daysLeft} days left</span>
+            </div>
+            <div class="grid-2" style="margin-bottom:10px;">
+              <div>
+                <div class="kpi-lbl">Today's Left</div>
+                <div class="kpi-val ${d.leftToday < 0 ? 'bad' : 'good'}">${formatINR(d.leftToday)}</div>
+                <div class="kpi-sub">Allowance: ${formatINR(d.currentAllowance)} | Spent today: ${formatINR(d.spentToday)}</div>
+              </div>
+              <div>
+                <div class="kpi-lbl">Budget Total Left</div>
+                <div class="kpi-val ${d.left < 0 ? 'bad' : ''}">${formatINR(d.left)}</div>
+                <div class="kpi-sub">Spent ${formatINR(d.spent)} of ${formatINR(d.B)}</div>
+              </div>
+            </div>
+
+            <!-- Block Progress Bar -->
+            <div class="block-bar ${d.left < 0 ? 'over' : ''}">
+              <i style="width:${Math.min(100, Math.round((d.spent / d.B) * 100))}%"></i>
+            </div>
+
+            <!-- Rolling Day by Day Table -->
+            <details style="margin-top:10px;">
+              <summary style="font-family:var(--font-mono);font-size:11px;cursor:pointer;color:var(--mut);">Show Day-by-Day Rolling Table</summary>
+              <div class="table-wrap" style="margin-top:8px;">
+                <table>
+                  <thead>
+                    <tr><th>Day</th><th>Date</th><th>Allowance</th><th>Spent</th><th>Left</th></tr>
+                  </thead>
+                  <tbody>
+                    ${d.rows.slice(0, d.di + 1).reverse().map((r) => `
+                      <tr class="${r.i === d.di ? 'active-row' : ''}">
+                        <td>Day ${r.i + 1}</td>
+                        <td>${shortDate(r.date)}</td>
+                        <td>${formatINR(r.al)}</td>
+                        <td>${formatINR(r.sp)}</td>
+                        <td class="${r.left < 0 ? 'bad' : ''}">${formatINR(r.left)}</td>
+                      </tr>
+                    `).join('')}
+                  </tbody>
+                </table>
+              </div>
+            </details>
+          </div>
+        `;
+      }).join('')}
+
+      <!-- Envelopes -->
+      <div class="card-title" style="margin-top:16px;">Undated Envelopes</div>
+      <div class="grid-2">
+        ${envelopes.map((env) => {
+          const s = calcEnvelope(env, state.ledger);
+          return `
+            <div class="card">
+              <div class="card-title">
+                <span>${env.name}</span>
+                ${env.hardCap ? '<span class="badge bad">Hard Cap</span>' : ''}
+              </div>
+              <div class="kpi-val ${s.left < 0 ? 'bad' : ''}">${formatINR(s.left)}</div>
+              <div class="kpi-sub">Funded: ${formatINR(s.funded)} | Spent: ${formatINR(s.spent)}</div>
+              <div class="block-bar ${s.isOverspent ? 'over' : ''}">
+                <i style="width:${s.pctSpent}%"></i>
+              </div>
+            </div>
+          `;
+        }).join('')}
+      </div>
+    `;
+  }
+
+  // -------------------------------------------------------------
+  // TAB 3: PEOPLE (OBLIGATIONS, BILLS & DEBTS)
+  // -------------------------------------------------------------
+  function renderPeopleTab(core) {
+    const people = groupObligationsByPerson(state.config.obligations, state.ledger);
+    const bills = state.config.obligations.filter((o) => o.role === 'bill');
+
+    return `
+      <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:12px;">
+        <h2 style="font-size:14px;margin:0;font-family:var(--font-mono);text-transform:uppercase;">People & Recurring Bills</h2>
+        <button class="sm pri" data-action="open-modal" data-modal="new-obligation">+ Add Obligation</button>
+      </div>
+
+      <!-- Recurring Bills (Rent, Electricity, etc.) -->
+      <section class="card">
+        <div class="card-title">Recurring Fixed Bills</div>
+        ${bills.length ? `
+          <div class="table-wrap">
+            <table>
+              <thead>
+                <tr><th>Bill</th><th>Cadence</th><th>Next Due</th><th>Amount</th><th>Status</th><th>Action</th></tr>
+              </thead>
+              <tbody>
+                ${bills.map((b) => {
+                  const stateOb = calculateObligationState(b, state.ledger);
+                  const recurrenceLabel = b.recurrence
+                    ? (b.recurrence.interval === 2 ? 'Every 2 months' : `Every ${b.recurrence.interval} ${b.recurrence.unit}`)
+                    : 'Monthly';
+                  return `
+                    <tr>
+                      <td><strong>${b.counterparty}</strong></td>
+                      <td><span class="badge blue">${recurrenceLabel}</span></td>
+                      <td>${b.due ? shortDate(b.due) : '—'}</td>
+                      <td>${formatINR(b.principal)}</td>
+                      <td><span class="badge ${stateOb.status === 'settled' ? 'acc' : 'warn'}">${stateOb.status}</span></td>
+                      <td>
+                        <button class="sm ghost" data-action="pay-bill" data-id="${b.id}">Pay & Roll</button>
+                      </td>
+                    </tr>
+                  `;
+                }).join('')}
+              </tbody>
+            </table>
+          </div>
+        ` : '<div class="sub">No recurring bills added. Add rent or electricity to track.</div>'}
+      </section>
+
+      <!-- Interpersonal Debts & Receivables Grouped by Person -->
+      <section class="card">
+        <div class="card-title">People (Debts & Receivables Netting)</div>
+        ${people.length ? people.map((p) => {
+          const isOwedToMe = p.confirmedNet > 0;
+          const isIOweThem = p.confirmedNet < 0;
+          return `
+            <div class="card" style="margin-bottom:8px;background:var(--card-alt);">
+              <div style="display:flex;justify-content:space-between;align-items:center;">
+                <div>
+                  <strong style="font-size:14px;">${p.person}</strong>
+                  <div class="kpi-sub">
+                    ${isOwedToMe ? `<span class="good">Owes you ${formatINR(Math.abs(p.confirmedNet))}</span>`
+                      : isIOweThem ? `<span class="bad">You owe ${formatINR(Math.abs(p.confirmedNet))}</span>`
+                      : '<span class="mut">All debts settled</span>'}
+                  </div>
+                </div>
+                <button class="sm pri" data-action="open-modal" data-modal="repay" data-person="${p.person}">Settle / Repay</button>
+              </div>
+
+              <!-- List of items for this person -->
+              <div style="margin-top:8px;">
+                ${[...p.debts, ...p.receivables].map((item) => `
+                  <div class="item-row">
+                    <div>
+                      <span class="badge ${item.direction === 'receive' ? 'acc' : 'bad'}">
+                        ${item.direction === 'receive' ? 'They owe me' : 'I owe them'}
+                      </span>
+                      <span style="margin-left:6px;font-size:12px;">${item.note || 'Loan / Split'}</span>
+                      ${item.status === 'potential' ? `<span class="badge warn">Potential (${item.likelihood}%)</span>` : ''}
+                    </div>
+                    <div>
+                      <span class="mono ${item.direction === 'receive' ? 'good' : 'bad'}">${formatINR(item.outstanding)}</span>
+                    </div>
+                  </div>
+                `).join('')}
+              </div>
+            </div>
+          `;
+        }).join('') : '<div class="sub">No personal debts or loans tracked yet.</div>'}
+      </section>
+    `;
+  }
+
+  // -------------------------------------------------------------
+  // TAB 4: MONEY (POOLS, INCOME & INDEPENDENT PYTHON AUDIT)
+  // -------------------------------------------------------------
+  function renderMoneyTab(core) {
+    const activePools = core.poolBalances.filter((p) => !p.isArchived);
+    const archivedPools = core.poolBalances.filter((p) => p.isArchived);
+
+    return `
+      <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:12px;">
+        <h2 style="font-size:14px;margin:0;font-family:var(--font-mono);text-transform:uppercase;">Physical Pools & Reconcile</h2>
+        <div style="display:flex;gap:6px;">
+          <button class="sm pri" data-action="open-modal" data-modal="new-pool">+ New Pool</button>
+          <button class="sm ghost" data-action="open-modal" data-modal="reconcile">Reconcile</button>
+        </div>
+      </div>
+
+      <!-- Active Pool Balances -->
+      <div class="hero-grid" style="grid-template-columns:repeat(auto-fit, minmax(220px, 1fr));">
+        ${activePools.map((p) => `
+          <div class="kpi-card ${p.balance < 0 ? 'danger' : ''}">
+            <div style="display:flex;justify-content:space-between;align-items:center;">
+              <div class="kpi-lbl">${p.name} (${p.type})</div>
+              <span class="badge blue">${p.type}</span>
+            </div>
+            <div class="kpi-val ${p.balance < 0 ? 'bad' : ''}">${formatINR(p.balance)}</div>
+            <div class="kpi-sub">Opening: ${formatINR(p.opening)}</div>
+            <div style="display:flex;gap:6px;margin-top:10px;">
+              <button class="sm ghost" data-action="open-modal" data-modal="reconcile" data-pool-id="${p.id}" style="flex:1;">Reconcile</button>
+              <button class="sm ghost danger" data-action="open-modal" data-modal="manage-pool" data-pool-id="${p.id}" style="flex:1;">Manage</button>
+            </div>
+          </div>
+        `).join('')}
+      </div>
+
+      <!-- Archived Pools Section (if any) -->
+      ${archivedPools.length ? `
+        <section class="card" style="margin-top:12px;background:#0d0f14;border-color:var(--line);">
+          <div class="card-title" style="color:var(--mut);">
+            <span>Archived Pools (${archivedPools.length})</span>
+          </div>
+          <div class="table-wrap">
+            <table>
+              <thead><tr><th>Pool</th><th>Type</th><th>Preserved Balance</th><th>Action</th></tr></thead>
+              <tbody>
+                ${archivedPools.map((ap) => `
+                  <tr>
+                    <td><strong>${ap.name}</strong></td>
+                    <td><span class="badge">${ap.type}</span></td>
+                    <td>${formatINR(ap.balance)}</td>
+                    <td><button class="sm pri" data-action="unarchive-pool" data-pool-id="${ap.id}">Restore / Unarchive</button></td>
+                  </tr>
+                `).join('')}
+              </tbody>
+            </table>
+          </div>
+        </section>
+      ` : ''}
+
+      <!-- Data Storage, Backup & Restore Section -->
+      <section class="card" style="border:2px solid var(--acc);margin-top:16px;">
+        <div class="card-title" style="color:var(--acc);">
+          <span>Data Storage, Backup & Migration</span>
+          <span class="badge acc">Local & Private</span>
+        </div>
+        <p style="font-size:12px;color:var(--mut);margin:0 0 10px;">
+          All financial data is stored securely in your device's browser sandbox (monthly sharded docs).
+          Export a complete JSON backup to save your data or transfer it to another phone or computer.
+        </p>
+        <div style="display:flex;gap:8px;flex-wrap:wrap;">
+          <button class="pri" data-action="export-json-backup">Export Full Backup (JSON)</button>
+          <button class="ghost" data-action="trigger-restore-json">Restore from Backup (JSON)</button>
+          <input type="file" id="restore-json-input" accept=".json" style="display:none;">
+        </div>
+      </section>
+
+      <!-- Mobile App & Desktop App Guide -->
+      <section class="card" style="margin-top:12px;">
+        <details>
+          <summary style="font-family:var(--font-mono);font-size:12px;font-weight:700;cursor:pointer;color:var(--sapphire);text-transform:uppercase;">
+            How to use on Mobile & Desktop (PWA / Electron)
+          </summary>
+          <div style="margin-top:10px;font-size:12px;line-height:1.6;color:var(--fg);">
+            <p><strong>Mobile App (iOS Safari):</strong> Tap the <em>Share</em> button (square with up arrow) &rarr; select <strong>"Add to Home Screen"</strong>. Launches full-screen in pure AMOLED black with zero browser chrome.</p>
+            <p><strong>Mobile App (Android Chrome / Brave):</strong> Tap the menu (<strong>⋮</strong>) &rarr; select <strong>"Install app"</strong> or <strong>"Add to Home screen"</strong>. Works 100% offline.</p>
+            <p><strong>Native Desktop App:</strong> Run <code>npm run desktop</code> from this folder to launch the dedicated native Electron desktop window.</p>
+          </div>
+        </details>
+      </section>
+
+      <!-- Independent Verification & Python Script Export -->
+      <section class="card" style="border:2px solid var(--sapphire);margin-top:16px;">
+        <div class="card-title" style="color:var(--sapphire);">
+          <span>Independent Calculation Audit & Verification</span>
+          <span class="badge blue">Python 3 CLI</span>
+        </div>
+        <p style="font-size:12px;color:var(--mut);margin:0 0 10px;">
+          Verify every single pool balance, allowance formula, shortfall, and projection independently.
+          Download a zero-dependency Python audit script embedding your active ledger data, or run the in-browser invariant health test.
+        </p>
+        <div style="display:flex;gap:8px;flex-wrap:wrap;">
+          <button class="pri" data-action="export-python-audit">
+            Export Python Audit Script (verify_ledger.py)
+          </button>
+          <button class="ghost" data-action="open-modal" data-modal="integrity-check">
+            Run In-Browser Invariants Check
+          </button>
+        </div>
+      </section>
+
+      <!-- Expected Income Log -->
+      <section class="card" style="margin-top:12px;">
+        <div class="card-title">
+          <span>Scheduled & Expected Incomes</span>
+          <button class="sm ghost" data-action="open-modal" data-modal="new-income">+ Add Income</button>
+        </div>
+        ${state.config.expectedIncomes && state.config.expectedIncomes.length ? `
+          <div class="table-wrap">
+            <table>
+              <thead><tr><th>Source</th><th>Amount</th><th>Cadence / Date</th><th>Action</th></tr></thead>
+              <tbody>
+                ${state.config.expectedIncomes.map((inc, i) => `
+                  <tr>
+                    <td><strong>${inc.source}</strong></td>
+                    <td class="good">+${formatINR(inc.amount)}</td>
+                    <td>${inc.recurrence ? `Every ${inc.recurrence.interval} ${inc.recurrence.unit}` : shortDate(inc.date)}</td>
+                    <td><button class="sm danger" data-action="del-expected-income" data-idx="${i}">Delete</button></td>
+                  </tr>
+                `).join('')}
+              </tbody>
+            </table>
+          </div>
+        ` : '<div class="sub">No expected recurring incomes added yet.</div>'}
+      </section>
+    `;
+  }
+
+  // -------------------------------------------------------------
+  // TAB 5: ANALYTICS & CHARTS
+  // -------------------------------------------------------------
+  function renderAnalyticsTab(core, projection) {
+    return `
+      <h2 style="font-size:14px;margin:0 0 12px;font-family:var(--font-mono);text-transform:uppercase;">Visual Analytics & Charts</h2>
+
+      <!-- Spend vs Funded Chart -->
+      <div class="card">
+        <div class="card-title">Spend vs Funded Distribution</div>
+        ${renderSpendBarChart({ budgetDetails: core.budgetDetails, width: 700 })}
+      </div>
+
+      <!-- Physical Pools Allocation Gauge -->
+      <div class="card">
+        <div class="card-title">Physical Pool Allocation</div>
+        ${renderPoolProportions({ poolBalances: core.poolBalances, width: 700, height: 32 })}
+      </div>
+
+      <!-- Recent Ledger Transactions -->
+      <div class="card">
+        <div class="card-title">
+          <span>Ledger Journal (Append-Only)</span>
+          <span class="mono" style="font-size:11px;color:var(--mut);">${state.ledger.length} total entries</span>
+        </div>
+        <div class="table-wrap" style="max-height:300px;overflow-y:auto;">
+          <table>
+            <thead>
+              <tr><th>Date</th><th>Type</th><th>Details</th><th>Amount</th><th>Del</th></tr>
+            </thead>
+            <tbody>
+              ${state.ledger.slice(-30).reverse().map((e) => `
+                <tr>
+                  <td>${shortDate(e.date)}</td>
+                  <td><span class="badge">${e.type}</span></td>
+                  <td>${e.note || e.source || '—'}</td>
+                  <td class="mono ${e.type === 'income' ? 'good' : 'bad'}">${formatINR(e.amount)}</td>
+                  <td><button class="sm danger" data-action="del-ledger-entry" data-id="${e.id}">&times;</button></td>
+                </tr>
+              `).join('')}
+            </tbody>
+          </table>
+        </div>
+      </div>
+    `;
+  }
+
+  // -------------------------------------------------------------
+  // TAB 6: QUICK ADD ENTRY
+  // -------------------------------------------------------------
+  function renderAddTab() {
+    const pools = state.config.pools;
+    const budgets = state.config.budgets;
+
+    return `
+      <div class="card" style="max-width:560px;margin:0 auto;">
+        <h2 style="font-size:14px;margin:0 0 12px;font-family:var(--font-mono);text-transform:uppercase;">Quick Add Transaction</h2>
+        
+        <form id="quick-add-form">
+          <div class="form-row">
+            <div>
+              <label>Transaction Type</label>
+              <select id="qa-type">
+                <option value="expense">Expense (Spend)</option>
+                <option value="income">Income (Deposit)</option>
+                <option value="transfer">Transfer (Pool to Pool)</option>
+                <option value="loan_out">Loan Given (Someone owes me)</option>
+                <option value="loan_in">Loan Received (I owe someone)</option>
+              </select>
+            </div>
+            <div>
+              <label>Amount (₹)</label>
+              <input id="qa-amt" type="number" step="any" min="1" placeholder="Amount" required autofocus>
+            </div>
+          </div>
+
+          <div class="form-row" id="qa-budget-row">
+            <div>
+              <label>Charge to Budget / Envelope</label>
+              <select id="qa-budget">
+                ${budgets.map((b) => `<option value="${b.id}">${b.name} (${b.kind})</option>`).join('')}
+              </select>
+            </div>
+          </div>
+
+          <div class="form-row">
+            <div>
+              <label>Physical Pool</label>
+              <select id="qa-pool">
+                ${pools.map((p) => `<option value="${p.id}">${p.name} (${formatINR(p.balance || 0)})</option>`).join('')}
+              </select>
+            </div>
+            <div id="qa-to-pool-col" style="display:none;">
+              <label>Destination Pool</label>
+              <select id="qa-to-pool">
+                ${pools.map((p) => `<option value="${p.id}">${p.name}</option>`).join('')}
+              </select>
+            </div>
+          </div>
+
+          <div class="form-row" id="qa-counterparty-row" style="display:none;">
+            <div>
+              <label>Person / Counterparty</label>
+              <input id="qa-person" placeholder="e.g. Alice, Bob">
+            </div>
+          </div>
+
+          <div class="form-row">
+            <div>
+              <label>Date</label>
+              <input id="qa-date" type="date" value="${todayISO()}">
+            </div>
+            <div>
+              <label>Note / Description</label>
+              <input id="qa-note" placeholder="Dinner, Groceries, etc.">
+            </div>
+          </div>
+
+          <div id="qa-err" style="color:var(--bad);font-family:var(--font-mono);font-size:12px;margin-bottom:8px;"></div>
+          <button class="pri" type="submit" style="width:100%;">Record Entry</button>
+        </form>
+      </div>
+    `;
+  }
+
+  // -------------------------------------------------------------
+  // MODALS
+  // -------------------------------------------------------------
+  function renderModal(modalName, core) {
+    let content = '';
+
+    if (modalName === 'integrity-check') {
+      const check = runInvariantsCheck(state.config, state.ledger);
+      content = `
+        <div class="modal-header">
+          <h3 class="modal-title">System Invariants & Mathematical Health</h3>
+          <button class="sm ghost" data-action="close-modal">&times;</button>
+        </div>
+        <p style="font-size:12px;color:var(--mut);">All checks evaluated at ${shortDate(todayISO())}:</p>
+        <div style="margin-bottom:14px;">
+          ${check.checks.map((c) => `
+            <div class="item-row">
+              <div>
+                <strong style="font-size:12px;">${c.name}</strong>
+                <div class="kpi-sub">${c.detail}</div>
+              </div>
+              <span class="badge ${c.status === 'pass' ? 'acc' : c.status === 'warn' ? 'warn' : 'bad'}">${c.status}</span>
+            </div>
+          `).join('')}
+        </div>
+        <button class="ghost" data-action="close-modal" style="width:100%;">Close</button>
+      `;
+    } else if (modalName === 'new-budget') {
+      content = `
+        <div class="modal-header">
+          <h3 class="modal-title">Create Budget or Envelope</h3>
+          <button class="sm ghost" data-action="close-modal">&times;</button>
+        </div>
+        <form id="modal-form-new-budget">
+          <div class="form-row">
+            <div>
+              <label>Budget Name</label>
+              <input id="mb-name" placeholder="e.g. Dining, Travel" required>
+            </div>
+            <div>
+              <label>Kind</label>
+              <select id="mb-kind">
+                <option value="envelope">Envelope (Undated)</option>
+                <option value="daily">Daily (Rolling Allowance)</option>
+              </select>
+            </div>
+          </div>
+          <div class="form-row">
+            <div>
+              <label>Allocated Amount (₹)</label>
+              <input id="mb-amt" type="number" min="0" value="3000" required>
+            </div>
+            <div id="mb-days-col" style="display:none;">
+              <label>Cycle Days</label>
+              <input id="mb-days" type="number" min="1" value="30">
+            </div>
+          </div>
+          <div class="form-row">
+            <label style="display:flex;align-items:center;gap:6px;cursor:pointer;">
+              <input type="checkbox" id="mb-hardcap" style="width:auto;"> Hard Cap (Block spends when exhausted)
+            </label>
+          </div>
+          <button class="pri" type="submit" style="width:100%;">Create Budget</button>
+        </form>
+      `;
+    } else if (modalName === 'new-obligation') {
+      content = `
+        <div class="modal-header">
+          <h3 class="modal-title">Add Obligation / Bill</h3>
+          <button class="sm ghost" data-action="close-modal">&times;</button>
+        </div>
+        <form id="modal-form-new-obligation">
+          <div class="form-row">
+            <div>
+              <label>Role</label>
+              <select id="mo-role">
+                <option value="bill">Recurring Fixed Bill (Rent, Electricity)</option>
+                <option value="debt">Debt (I owe a person)</option>
+                <option value="receivable">Receivable (Person owes me)</option>
+              </select>
+            </div>
+            <div>
+              <label>Counterparty / Provider</label>
+              <input id="mo-party" placeholder="e.g. Landlord, BESCOM, Bob" required>
+            </div>
+          </div>
+          <div class="form-row">
+            <div>
+              <label>Amount (₹)</label>
+              <input id="mo-amt" type="number" min="1" required>
+            </div>
+            <div>
+              <label>Next Due Date</label>
+              <input id="mo-due" type="date" value="${addDays(todayISO(), 14)}">
+            </div>
+          </div>
+          <div class="form-row" id="mo-recurrence-row">
+            <div>
+              <label>Cadence</label>
+              <select id="mo-cadence">
+                <option value="1-months">Monthly (Every 1 month)</option>
+                <option value="2-months">Bimonthly (Every 2 months, e.g. electricity)</option>
+                <option value="12-months">Annually (Every 1 year)</option>
+                <option value="none">One-off (No recurrence)</option>
+              </select>
+            </div>
+          </div>
+          <button class="pri" type="submit" style="width:100%;">Save Obligation</button>
+        </form>
+      `;
+    } else if (modalName === 'allocate') {
+      content = `
+        <div class="modal-header">
+          <h3 class="modal-title">Allocate / Transfer Funds</h3>
+          <button class="sm ghost" data-action="close-modal">&times;</button>
+        </div>
+        <form id="modal-form-allocate">
+          <div class="form-row">
+            <div>
+              <label>Source of Funds</label>
+              <select id="mal-from">
+                <option value="unallocated">Unallocated Pool Money (₹${Math.max(0, core.unallocated).toFixed(2)} available)</option>
+                ${state.config.budgets.map((b) => `<option value="${b.id}">Budget: ${b.name}</option>`).join('')}
+              </select>
+            </div>
+          </div>
+          <div class="form-row">
+            <div>
+              <label>Destination Budget / Envelope</label>
+              <select id="mal-to">
+                ${state.config.budgets.map((b) => `<option value="${b.id}">${b.name} (${b.kind})</option>`).join('')}
+              </select>
+            </div>
+          </div>
+          <div class="form-row">
+            <div>
+              <label>Amount to Allocate (₹)</label>
+              <input id="mal-amt" type="number" min="1" step="any" placeholder="Amount" required autofocus>
+            </div>
+          </div>
+          <div id="mal-err" style="color:var(--bad);font-family:var(--font-mono);font-size:12px;margin-bottom:8px;"></div>
+          <button class="pri" type="submit" style="width:100%;">Transfer Allocation</button>
+        </form>
+      `;
+    } else if (modalName === 'repay') {
+      const person = (state.modalData?.person || '').trim();
+      const personObs = state.config.obligations.filter((o) =>
+        (o.counterparty || '').trim() === person &&
+        o.status !== 'settled' && o.status !== 'forgiven' && o.status !== 'cancelled'
+      );
+      content = `
+        <div class="modal-header">
+          <h3 class="modal-title">Settle / Repay: ${person || 'Person'}</h3>
+          <button class="sm ghost" data-action="close-modal">&times;</button>
+        </div>
+        ${personObs.length ? `
+          <form id="modal-form-repay">
+            <div class="form-row">
+              <div>
+                <label>Select Item to Settle</label>
+                <select id="mrp-ob">
+                  ${personObs.map((o) => {
+                    const s = calculateObligationState(o, state.ledger);
+                    return `<option value="${o.id}">${o.direction === 'receive' ? 'They owe me' : 'I owe them'}: ${formatINR(s.outstanding)} (${o.note || o.role})</option>`;
+                  }).join('')}
+                </select>
+              </div>
+            </div>
+            <div class="form-row">
+              <div>
+                <label>Pool Used</label>
+                <select id="mrp-pool">
+                  ${state.config.pools.map((p) => `<option value="${p.id}">${p.name} (${formatINR(p.balance || 0)})</option>`).join('')}
+                </select>
+              </div>
+              <div>
+                <label>Amount (₹)</label>
+                <input id="mrp-amt" type="number" min="1" step="any" placeholder="Repayment amount" required autofocus>
+              </div>
+            </div>
+            <div class="form-row" style="display:flex;gap:8px;">
+              <button class="pri" type="submit" style="flex:2;">Record Repayment</button>
+              <button type="button" class="danger sm" id="mrp-forgive-btn" style="flex:1;">Forgive / Close</button>
+            </div>
+          </form>
+        ` : `
+          <p style="color:var(--mut);font-size:12px;margin:10px 0;">No active outstanding debts or receivables for ${person || 'this person'}.</p>
+          <button class="ghost" data-action="close-modal" style="width:100%;">Close</button>
+        `}
+      `;
+    } else if (modalName === 'new-pool') {
+      content = `
+        <div class="modal-header">
+          <h3 class="modal-title">Create Physical Pool</h3>
+          <button class="sm ghost" data-action="close-modal">&times;</button>
+        </div>
+        <form id="modal-form-new-pool">
+          <div class="form-row">
+            <div>
+              <label>Pool Name</label>
+              <input id="mnp-name" placeholder="e.g. HDFC Bank, Physical Cash" required autofocus>
+            </div>
+            <div>
+              <label>Type</label>
+              <select id="mnp-type">
+                <option value="bank">Bank Account</option>
+                <option value="cash">Cash in Hand</option>
+                <option value="upi">UPI / Digital Wallet</option>
+                <option value="other">Other</option>
+              </select>
+            </div>
+          </div>
+          <div class="form-row">
+            <div>
+              <label>Opening Balance (₹)</label>
+              <input id="mnp-opening" type="number" step="any" value="0" required>
+            </div>
+          </div>
+          <button class="pri" type="submit" style="width:100%;">Create Pool</button>
+        </form>
+      `;
+    } else if (modalName === 'new-income') {
+      content = `
+        <div class="modal-header">
+          <h3 class="modal-title">Schedule Expected / Recurring Income</h3>
+          <button class="sm ghost" data-action="close-modal">&times;</button>
+        </div>
+        <form id="modal-form-new-income">
+          <div class="form-row">
+            <div>
+              <label>Source / Label</label>
+              <input id="mni-source" placeholder="e.g. Salary, Consulting, Dividend" required autofocus>
+            </div>
+            <div>
+              <label>Amount (₹)</label>
+              <input id="mni-amt" type="number" min="1" step="any" placeholder="Amount" required>
+            </div>
+          </div>
+          <div class="form-row">
+            <div>
+              <label>Start / Expected Date</label>
+              <input id="mni-date" type="date" value="${todayISO()}">
+            </div>
+            <div>
+              <label>Cadence</label>
+              <select id="mni-cadence">
+                <option value="1-months">Monthly (Every 1 month)</option>
+                <option value="2-weeks">Biweekly (Every 2 weeks)</option>
+                <option value="none">One-off Expected Date</option>
+              </select>
+            </div>
+          </div>
+          <button class="pri" type="submit" style="width:100%;">Schedule Income</button>
+        </form>
+      `;
+    } else if (modalName === 'manage-pool') {
+      const poolId = state.modalData?.poolId;
+      const pool = state.config.pools.find((p) => p.id === poolId);
+      const otherPools = state.config.pools.filter((p) => p.id !== poolId && !p.isArchived);
+      const hasTransactions = state.ledger.some((e) => e.poolId === poolId || e.toPoolId === poolId);
+      const poolBalance = (core.poolBalances.find((p) => p.id === poolId)?.balance) || 0;
+
+      content = `
+        <div class="modal-header">
+          <h3 class="modal-title">Manage Pool: ${pool ? pool.name : 'Pool'}</h3>
+          <button class="sm ghost" data-action="close-modal">&times;</button>
+        </div>
+        ${pool ? `
+          <div style="margin-bottom:12px;font-size:12px;color:var(--mut);">
+            Current calculated balance: <strong class="${poolBalance < 0 ? 'bad' : 'good'}">${formatINR(poolBalance)}</strong>
+          </div>
+          ${poolBalance > 0 && otherPools.length ? `
+            <form id="modal-form-transfer-archive">
+              <p style="font-size:12px;color:var(--peach);margin-bottom:8px;">
+                This pool contains funds. Transfer balance to another pool before archiving:
+              </p>
+              <div class="form-row">
+                <div>
+                  <label>Transfer Remaining to</label>
+                  <select id="mta-to-pool">
+                    ${otherPools.map((op) => `<option value="${op.id}">${op.name} (${formatINR(op.balance || 0)})</option>`).join('')}
+                  </select>
+                </div>
+              </div>
+              <div style="display:flex;gap:8px;margin-top:10px;">
+                <button class="pri" type="submit" style="flex:1;">Transfer & Archive</button>
+                <button type="button" class="danger sm" id="mta-direct-archive" style="flex:1;">Archive Without Transfer</button>
+              </div>
+            </form>
+          ` : `
+            <div>
+              <p style="font-size:12px;color:var(--mut);margin-bottom:12px;">
+                ${hasTransactions
+                  ? 'This pool has transaction history. Archiving hides it from active dashboards and excludes it from Total Available, while preserving your historical accounting.'
+                  : 'This pool is empty and has no transaction history. You can safely delete it permanently.'}
+              </p>
+              <div style="display:flex;gap:8px;">
+                <button class="pri" id="btn-confirm-archive" style="flex:1;">Archive Pool</button>
+                ${!hasTransactions ? `
+                  <button class="danger sm" id="btn-confirm-delete" style="flex:1;">Delete Permanently</button>
+                ` : ''}
+              </div>
+            </div>
+          `}
+        ` : `
+          <div class="sub">Pool not found.</div>
+          <button class="ghost" data-action="close-modal">Close</button>
+        `}
+      `;
+    } else if (modalName === 'reconcile') {
+      content = `
+        <div class="modal-header">
+          <h3 class="modal-title">Reconcile Pool to Reality</h3>
+          <button class="sm ghost" data-action="close-modal">&times;</button>
+        </div>
+        <form id="modal-form-reconcile">
+          <div class="form-row">
+            <div>
+              <label>Select Pool</label>
+              <select id="mr-pool">
+                ${state.config.pools.map((p) => `<option value="${p.id}">${p.name} (Calculated: ${formatINR(p.balance || 0)})</option>`).join('')}
+              </select>
+            </div>
+          </div>
+          <div class="form-row">
+            <div>
+              <label>Real Physical Balance (₹)</label>
+              <input id="mr-real" type="number" step="any" placeholder="Actual money present" required>
+            </div>
+          </div>
+          <button class="pri" type="submit" style="width:100%;">Apply Balancing Adjustment</button>
+        </form>
+      `;
+    }
+
+    return `
+      <div class="modal-overlay" data-action="close-modal-overlay">
+        <div class="modal-content">
+          ${content}
+        </div>
+      </div>
+    `;
+  }
+
+  // -------------------------------------------------------------
+  // EVENT LISTENERS
+  // -------------------------------------------------------------
+  function attachListeners() {
+    attachChartInteractions(rootElement);
+
+    // Tab switching
+    rootElement.querySelectorAll('.tab-btn').forEach((btn) => {
+      btn.addEventListener('click', () => {
+        state.activeTab = btn.getAttribute('data-tab');
+        state.config.activeTab = state.activeTab;
+        save();
+        render();
+      });
+    });
+
+    // Date Horizon Controls
+    rootElement.querySelectorAll('[data-set-days]').forEach((btn) => {
+      btn.addEventListener('click', () => {
+        const days = Number(btn.getAttribute('data-set-days'));
+        state.horizonDate = addDays(todayISO(), days);
+        render();
+      });
+    });
+
+    rootElement.querySelectorAll('[data-set-cycle]').forEach((btn) => {
+      btn.addEventListener('click', () => {
+        state.horizonDate = getCycleEnd(todayISO(), state.config.cycleStartDay || 1);
+        render();
+      });
+    });
+
+    const datePicker = rootElement.querySelector('#horizon-date-picker');
+    if (datePicker) {
+      datePicker.addEventListener('change', (e) => {
+        if (e.target.value) {
+          state.horizonDate = e.target.value;
+          render();
+        }
+      });
+    }
+
+    // Modal Triggers
+    rootElement.querySelectorAll('[data-action="open-modal"]').forEach((btn) => {
+      btn.addEventListener('click', () => {
+        state.activeModal = btn.getAttribute('data-modal');
+        state.modalData = {
+          person: btn.getAttribute('data-person'),
+          poolId: btn.getAttribute('data-pool-id')
+        };
+        render();
+      });
+    });
+
+    rootElement.querySelectorAll('[data-action="close-modal"]').forEach((btn) => {
+      btn.addEventListener('click', () => {
+        state.activeModal = null;
+        state.modalData = null;
+        render();
+      });
+    });
+
+    const overlay = rootElement.querySelector('.modal-overlay');
+    if (overlay) {
+      overlay.addEventListener('click', (e) => {
+        if (e.target === overlay) {
+          state.activeModal = null;
+          state.modalData = null;
+          render();
+        }
+      });
+    }
+
+    if (typeof window !== 'undefined') {
+      window.onkeydown = (e) => {
+        if (e.key === 'Escape' && state.activeModal) {
+          state.activeModal = null;
+          state.modalData = null;
+          render();
+        }
+      };
+    }
+
+    // Export Python Audit Script
+    const exportPyBtn = rootElement.querySelector('[data-action="export-python-audit"]');
+    if (exportPyBtn) {
+      exportPyBtn.addEventListener('click', () => {
+        const pyScript = generatePythonAuditScript(state.config, state.ledger, state.horizonDate);
+        const blob = new Blob([pyScript], { type: 'text/x-python' });
+        const url = URL.createObjectURL(blob);
+        const a = document.createElement('a');
+        a.href = url;
+        a.download = 'verify_ledger.py';
+        document.body.appendChild(a);
+        a.click();
+        document.body.removeChild(a);
+        URL.revokeObjectURL(url);
+      });
+    }
+
+    // Pay Bill & Roll
+    rootElement.querySelectorAll('[data-action="pay-bill"]').forEach((btn) => {
+      btn.addEventListener('click', () => {
+        const id = btn.getAttribute('data-id');
+        const bill = state.config.obligations.find((o) => o.id === id);
+        if (bill) {
+          // Record payment expense
+          state.ledger.push({
+            id: uid(),
+            date: todayISO(),
+            type: 'expense',
+            amount: bill.principal,
+            poolId: state.config.pools[0]?.id || 'pool-bank',
+            obligationId: bill.id,
+            note: `Bill payment: ${bill.counterparty}`
+          });
+          // Roll next due date
+          const updated = advanceBillCycle(bill, todayISO());
+          Object.assign(bill, updated);
+          save();
+          render();
+        }
+      });
+    });
+
+    // Delete Ledger Entry
+    rootElement.querySelectorAll('[data-action="del-ledger-entry"]').forEach((btn) => {
+      btn.addEventListener('click', () => {
+        const id = btn.getAttribute('data-id');
+        state.ledger = state.ledger.filter((e) => e.id !== id);
+        save();
+        render();
+      });
+    });
+
+    // Quick Add Form
+    const qaForm = rootElement.querySelector('#quick-add-form');
+    if (qaForm) {
+      const qaType = rootElement.querySelector('#qa-type');
+      const budgetRow = rootElement.querySelector('#qa-budget-row');
+      const toPoolCol = rootElement.querySelector('#qa-to-pool-col');
+      const counterpartyRow = rootElement.querySelector('#qa-counterparty-row');
+
+      qaType.addEventListener('change', () => {
+        const t = qaType.value;
+        budgetRow.style.display = t === 'expense' ? 'flex' : 'none';
+        toPoolCol.style.display = t === 'transfer' ? 'block' : 'none';
+        counterpartyRow.style.display = (t === 'loan_in' || t === 'loan_out') ? 'flex' : 'none';
+      });
+
+      qaForm.addEventListener('submit', (e) => {
+        e.preventDefault();
+        const type = qaType.value;
+        const amt = Number(rootElement.querySelector('#qa-amt').value);
+        const poolId = rootElement.querySelector('#qa-pool').value;
+        const note = rootElement.querySelector('#qa-note').value.trim();
+        const date = rootElement.querySelector('#qa-date').value || todayISO();
+        const errDiv = rootElement.querySelector('#qa-err');
+
+        if (!(amt > 0)) {
+          errDiv.textContent = 'Please enter a valid amount > 0';
+          return;
+        }
+
+        if (type === 'expense') {
+          const budgetId = rootElement.querySelector('#qa-budget').value;
+          const budget = state.config.budgets.find((b) => b.id === budgetId);
+          if (budget) {
+            const check = validateExpenseAdd(budget, amt, state.ledger);
+            if (!check.allowed) {
+              errDiv.textContent = check.reason;
+              return;
+            }
+          }
+          state.ledger.push({ id: uid(), date, type: 'expense', amount: amt, poolId, budgetId, note });
+        } else if (type === 'income') {
+          state.ledger.push({ id: uid(), date, type: 'income', amount: amt, poolId, source: note || 'Income', note });
+        } else if (type === 'transfer') {
+          const toPoolId = rootElement.querySelector('#qa-to-pool').value;
+          if (toPoolId === poolId) {
+            errDiv.textContent = 'Source and destination pools must be different.';
+            return;
+          }
+          state.ledger.push({ id: uid(), date, type: 'transfer', amount: amt, poolId, toPoolId, note });
+        } else if (type === 'loan_out') {
+          const person = rootElement.querySelector('#qa-person').value.trim() || 'Friend';
+          const obId = uid();
+          state.config.obligations.push({
+            id: obId,
+            role: 'receivable',
+            counterparty: person,
+            direction: 'receive',
+            principal: amt,
+            outstanding: amt,
+            created: date,
+            status: 'confirmed',
+            likelihood: 100,
+            note
+          });
+          state.ledger.push({ id: uid(), date, type: 'loan_out', amount: amt, poolId, obligationId: obId, note });
+        } else if (type === 'loan_in') {
+          const person = rootElement.querySelector('#qa-person').value.trim() || 'Friend';
+          const obId = uid();
+          state.config.obligations.push({
+            id: obId,
+            role: 'debt',
+            counterparty: person,
+            direction: 'pay',
+            principal: amt,
+            outstanding: amt,
+            created: date,
+            status: 'confirmed',
+            likelihood: 100,
+            note
+          });
+          state.ledger.push({ id: uid(), date, type: 'loan_in', amount: amt, poolId, obligationId: obId, note });
+        }
+
+        save();
+        state.activeTab = 'overview';
+        render();
+      });
+    }
+
+    // Modal Submissions
+    const mBudgetForm = rootElement.querySelector('#modal-form-new-budget');
+    if (mBudgetForm) {
+      const kindSelect = rootElement.querySelector('#mb-kind');
+      const daysCol = rootElement.querySelector('#mb-days-col');
+      kindSelect.addEventListener('change', () => {
+        daysCol.style.display = kindSelect.value === 'daily' ? 'block' : 'none';
+      });
+
+      mBudgetForm.addEventListener('submit', (e) => {
+        e.preventDefault();
+        const name = rootElement.querySelector('#mb-name').value.trim() || 'Budget';
+        const kind = kindSelect.value;
+        const amt = Number(rootElement.querySelector('#mb-amt').value) || 0;
+        const hardCap = rootElement.querySelector('#mb-hardcap').checked;
+        const days = Number(rootElement.querySelector('#mb-days').value) || 30;
+
+        state.config.budgets.push({
+          id: uid(),
+          name,
+          kind,
+          amount: amt,
+          days: kind === 'daily' ? days : undefined,
+          start: todayISO(),
+          hardCap,
+          funding: [{ poolId: state.config.pools[0]?.id || 'pool-bank', amount: amt }]
+        });
+
+        state.activeModal = null;
+        save();
+        render();
+      });
+    }
+
+    const mAllocateForm = rootElement.querySelector('#modal-form-allocate');
+    if (mAllocateForm) {
+      mAllocateForm.addEventListener('submit', (e) => {
+        e.preventDefault();
+        const fromVal = rootElement.querySelector('#mal-from').value;
+        const toBudgetId = rootElement.querySelector('#mal-to').value;
+        const amt = Number(rootElement.querySelector('#mal-amt').value);
+        const errDiv = rootElement.querySelector('#mal-err');
+
+        if (!(amt > 0)) {
+          errDiv.textContent = 'Please enter an amount > 0';
+          return;
+        }
+
+        if (fromVal === toBudgetId) {
+          errDiv.textContent = 'Source and destination cannot be the same.';
+          return;
+        }
+
+        const fromBudgetId = fromVal === 'unallocated' ? null : fromVal;
+        const fromName = fromBudgetId
+          ? (state.config.budgets.find((b) => b.id === fromBudgetId)?.name || 'Budget')
+          : 'Unallocated';
+        const toName = state.config.budgets.find((b) => b.id === toBudgetId)?.name || 'Budget';
+
+        state.ledger.push({
+          id: uid(),
+          date: todayISO(),
+          type: 'allocation',
+          fromBudgetId,
+          toBudgetId,
+          amount: amt,
+          note: `Allocation: ${fromName} -> ${toName}`
+        });
+
+        state.activeModal = null;
+        save();
+        render();
+      });
+    }
+
+    const mRepayForm = rootElement.querySelector('#modal-form-repay');
+    if (mRepayForm) {
+      mRepayForm.addEventListener('submit', (e) => {
+        e.preventDefault();
+        const obId = rootElement.querySelector('#mrp-ob').value;
+        const poolId = rootElement.querySelector('#mrp-pool').value;
+        const amt = Number(rootElement.querySelector('#mrp-amt').value);
+        const ob = state.config.obligations.find((o) => o.id === obId);
+        if (ob && amt > 0) {
+          const dir = ob.direction === 'receive' ? 'in' : 'out';
+          state.ledger.push({
+            id: uid(),
+            date: todayISO(),
+            type: 'repayment',
+            obligationId: ob.id,
+            poolId,
+            direction: dir,
+            amount: amt,
+            note: `Repayment from/to ${ob.counterparty}`
+          });
+          state.activeModal = null;
+          save();
+          render();
+        }
+      });
+
+      const forgiveBtn = rootElement.querySelector('#mrp-forgive-btn');
+      if (forgiveBtn) {
+        forgiveBtn.addEventListener('click', () => {
+          const obId = rootElement.querySelector('#mrp-ob').value;
+          const ob = state.config.obligations.find((o) => o.id === obId);
+          if (ob) {
+            ob.status = 'forgiven';
+            ob.outstanding = 0;
+            state.activeModal = null;
+            save();
+            render();
+          }
+        });
+      }
+    }
+
+    const mNewPoolForm = rootElement.querySelector('#modal-form-new-pool');
+    if (mNewPoolForm) {
+      mNewPoolForm.addEventListener('submit', (e) => {
+        e.preventDefault();
+        const name = rootElement.querySelector('#mnp-name').value.trim() || 'Pool';
+        const type = rootElement.querySelector('#mnp-type').value;
+        const opening = Number(rootElement.querySelector('#mnp-opening').value) || 0;
+        state.config.pools.push({
+          id: uid(),
+          name,
+          type,
+          opening,
+          balance: opening,
+          isArchived: false
+        });
+        state.activeModal = null;
+        save();
+        render();
+      });
+    }
+
+    const mNewIncomeForm = rootElement.querySelector('#modal-form-new-income');
+    if (mNewIncomeForm) {
+      mNewIncomeForm.addEventListener('submit', (e) => {
+        e.preventDefault();
+        const source = rootElement.querySelector('#mni-source').value.trim() || 'Income';
+        const amount = Number(rootElement.querySelector('#mni-amt').value) || 0;
+        const date = rootElement.querySelector('#mni-date').value || todayISO();
+        const cadence = rootElement.querySelector('#mni-cadence').value;
+
+        let recurrence = null;
+        if (cadence !== 'none') {
+          const [intStr, unit] = cadence.split('-');
+          recurrence = {
+            interval: Number(intStr) || 1,
+            unit,
+            anchorDate: date
+          };
+        }
+
+        if (!Array.isArray(state.config.expectedIncomes)) {
+          state.config.expectedIncomes = [];
+        }
+
+        state.config.expectedIncomes.push({
+          id: uid(),
+          source,
+          amount,
+          date,
+          recurrence,
+          likelihood: 100
+        });
+
+        state.activeModal = null;
+        save();
+        render();
+      });
+    }
+
+    rootElement.querySelectorAll('[data-action="del-expected-income"]').forEach((btn) => {
+      btn.addEventListener('click', () => {
+        const idx = Number(btn.getAttribute('data-idx'));
+        if (Array.isArray(state.config.expectedIncomes)) {
+          state.config.expectedIncomes.splice(idx, 1);
+          save();
+          render();
+        }
+      });
+    });
+
+    // Unarchive Pool
+    rootElement.querySelectorAll('[data-action="unarchive-pool"]').forEach((btn) => {
+      btn.addEventListener('click', () => {
+        const pid = btn.getAttribute('data-pool-id');
+        const p = state.config.pools.find((x) => x.id === pid);
+        if (p) {
+          p.isArchived = false;
+          save();
+          render();
+        }
+      });
+    });
+
+    // Transfer & Archive Pool
+    const mtaForm = rootElement.querySelector('#modal-form-transfer-archive');
+    if (mtaForm) {
+      mtaForm.addEventListener('submit', (e) => {
+        e.preventDefault();
+        const poolId = state.modalData?.poolId;
+        const toPoolId = rootElement.querySelector('#mta-to-pool').value;
+        const pool = state.config.pools.find((p) => p.id === poolId);
+        const coreNumbers = calculateCoreNumbers({
+          pools: state.config.pools,
+          budgets: state.config.budgets,
+          obligations: state.config.obligations,
+          ledgerEntries: state.ledger
+        });
+        const poolBalance = (coreNumbers.poolBalances.find((p) => p.id === poolId)?.balance) || 0;
+
+        if (pool && toPoolId && poolBalance > 0) {
+          const toPool = state.config.pools.find((p) => p.id === toPoolId);
+          state.ledger.push({
+            id: uid(),
+            date: todayISO(),
+            type: 'transfer',
+            poolId,
+            toPoolId,
+            amount: poolBalance,
+            note: `Closing transfer: ${pool.name} -> ${toPool?.name || 'Pool'}`
+          });
+        }
+        if (pool) pool.isArchived = true;
+        state.activeModal = null;
+        save();
+        render();
+      });
+
+      const directArchiveBtn = rootElement.querySelector('#mta-direct-archive');
+      if (directArchiveBtn) {
+        directArchiveBtn.addEventListener('click', () => {
+          const poolId = state.modalData?.poolId;
+          const pool = state.config.pools.find((p) => p.id === poolId);
+          if (pool) pool.isArchived = true;
+          state.activeModal = null;
+          save();
+          render();
+        });
+      }
+    }
+
+    const archiveBtn = rootElement.querySelector('#btn-confirm-archive');
+    if (archiveBtn) {
+      archiveBtn.addEventListener('click', () => {
+        const poolId = state.modalData?.poolId;
+        const pool = state.config.pools.find((p) => p.id === poolId);
+        if (pool) pool.isArchived = true;
+        state.activeModal = null;
+        save();
+        render();
+      });
+    }
+
+    const deleteBtn = rootElement.querySelector('#btn-confirm-delete');
+    if (deleteBtn) {
+      deleteBtn.addEventListener('click', () => {
+        const poolId = state.modalData?.poolId;
+        state.config.pools = state.config.pools.filter((p) => p.id !== poolId);
+        state.activeModal = null;
+        save();
+        render();
+      });
+    }
+
+    // Export Full JSON Backup
+    const expJsonBtn = rootElement.querySelector('[data-action="export-json-backup"]');
+    if (expJsonBtn) {
+      expJsonBtn.addEventListener('click', () => {
+        const jsonStr = exportFullBackupJSON(state.config, state.ledger);
+        const blob = new Blob([jsonStr], { type: 'application/json' });
+        const url = URL.createObjectURL(blob);
+        const a = document.createElement('a');
+        a.href = url;
+        a.download = `budget-backup-${todayISO()}.json`;
+        document.body.appendChild(a);
+        a.click();
+        document.body.removeChild(a);
+        URL.revokeObjectURL(url);
+      });
+    }
+
+    // Restore Backup from JSON
+    const trigRestoreBtn = rootElement.querySelector('[data-action="trigger-restore-json"]');
+    const restoreInput = rootElement.querySelector('#restore-json-input');
+    if (trigRestoreBtn && restoreInput) {
+      trigRestoreBtn.addEventListener('click', () => {
+        restoreInput.click();
+      });
+      restoreInput.addEventListener('change', (e) => {
+        const file = e.target.files && e.target.files[0];
+        if (!file) return;
+        const reader = new FileReader();
+        reader.onload = (event) => {
+          try {
+            const restored = validateAndParseBackup(event.target.result);
+            state.config = restored.config;
+            state.ledger = restored.ledger;
+            save();
+            alert('Backup successfully restored!');
+            render();
+          } catch (err) {
+            alert('Failed to restore backup: ' + err.message);
+          }
+        };
+        reader.readAsText(file);
+      });
+    }
+  }
+
+  render();
+}
+
+  // --- Bootloader ---
+  function boot() {
+    const el = document.getElementById('app');
+    if (el) initApp(el);
+  }
+  if (document.readyState === 'loading') {
+    document.addEventListener('DOMContentLoaded', boot);
+  } else {
+    boot();
+  }
+})();
+
+if ('serviceWorker' in navigator && (window.location.protocol === 'https:' || window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1')) {
+  window.addEventListener('load', () => {
+    navigator.serviceWorker.register('./sw.js').catch(() => {});
+  });
+}
+</script>
+</body>
+</html>

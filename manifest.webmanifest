@@ -1,0 +1,19 @@
+{
+  "name": "Budget Tracker v2",
+  "short_name": "Budget",
+  "description": "AMOLED Black Blocky Personal Finance & Budget Tracker",
+  "start_url": "./index.html",
+  "scope": "./",
+  "display": "standalone",
+  "background_color": "#000000",
+  "theme_color": "#000000",
+  "orientation": "any",
+  "icons": [
+    {
+      "src": "icon.svg",
+      "sizes": "any",
+      "type": "image/svg+xml",
+      "purpose": "any maskable"
+    }
+  ]
+}

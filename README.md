@@ -39,47 +39,71 @@ A self-contained, offline-first personal finance system featuring a **Catppuccin
 
 ## Quick Start
 
-### 1. Run in Browser (Zero Setup)
-Simply double-click or open [`Budget Tracker v2.html`](./Budget%20Tracker%20v2.html) in any web browser. No server, build step, or internet connection is required.
+### 1. Web App (GitHub Pages — Recommended for Mobile & Desktop)
+Deploy to GitHub Pages to get an HTTPS Progressive Web App (PWA) with 100% offline support:
+- Go to repository **Settings** &rarr; **Pages**.
+- Under **Build and deployment** &rarr; **Source**, select **GitHub Actions** (or select **Deploy from a branch** &rarr; `main` / `root`).
+- Open your site: `https://<username>.github.io/budget_tracker_v2/`.
+- **Privacy Guarantee**: GitHub Pages only serves the static code. All your transactions and budgets are saved exclusively on your phone/computer in local storage; **nothing is ever transmitted to GitHub or any server**.
 
-### 2. Run as Native Desktop App (Electron)
-Launch a dedicated, frameless native AMOLED desktop window:
+### 2. Run in Browser (Local HTML File)
+Double-click or open [`Budget Tracker v2.html`](./Budget%20Tracker%20v2.html) (or [`index.html`](./index.html)) directly in any desktop browser.
+
+### 3. Run as Native Desktop App (Electron)
+Launch a dedicated, frameless native AMOLED desktop window with local window persistence:
 ```bash
 npm install # if not already installed
 npm run desktop
 ```
 
-### 3. Run Automated Tests
-Execute the 25-test Node.js test suite and cross-language Python verification:
+### 4. Run Automated Tests
+Execute the 25-test Node.js test suite and cross-language Python mathematical audit:
 ```bash
 npm test
 ```
 
-### 4. Build from Source
-Re-bundle the modular source files into the standalone single-file HTML deliverable:
+### 5. Build from Source
+Re-bundle the modular source files into standalone HTML, manifest, icon, and offline service worker:
 ```bash
 npm run build
 ```
 
 ---
 
-## How to Install on Mobile (Mobile App)
+## How to Install as a Mobile App (PWA)
 
-Budget Tracker v2 is packaged as an installable **Progressive Web App (PWA)** that launches full-screen without browser address bars:
+> [!IMPORTANT]
+> **Why opening `.html` directly gives an error in Chrome mobile**:
+> Google Chrome and modern mobile browsers require a **Secure Origin (HTTPS)** or `localhost` to install Progressive Web Apps and register Service Workers. Android Chrome will block or fail "Add to Home screen" if opened from a raw `file:///` path.
+> 
+> **The Solution**: Open your **GitHub Pages URL** (`https://<username>.github.io/budget_tracker_v2/`) in Chrome mobile, which provides genuine HTTPS and unlocks instant installation.
 
 ### Android (Chrome, Brave, Samsung Internet)
-1. Transfer [`Budget Tracker v2.html`](./Budget%20Tracker%20v2.html) to your phone (via WhatsApp, Telegram, Google Drive, or USB).
-2. Tap to open in Chrome or Brave.
-3. Tap the browser menu (**⋮**) in the top-right corner.
-4. Select **"Install app"** or **"Add to Home screen"**.
-5. The **Budget Tracker** icon will be added to your home screen and app drawer.
+1. Open your GitHub Pages link in Chrome on your phone:
+   `https://<username>.github.io/budget_tracker_v2/`
+2. Chrome will automatically display an **"Add Budget Tracker to Home screen"** banner, or tap the browser menu (**⋮**) in the top-right corner.
+3. Select **"Install app"** (or **"Add to Home screen"**).
+4. Tap **Install**.
+5. The **Budget Tracker** icon (₹) will now appear directly in your Android app drawer and home screen.
+6. **Offline Capability**: Thanks to the built-in Service Worker (`sw.js`), after the initial load, the app works **100% offline** — you can record expenses in airplane mode with no internet connection.
 
 ### iPhone / iPad (Safari)
-1. Transfer [`Budget Tracker v2.html`](./Budget%20Tracker%20v2.html) to your device and save to the **Files** app.
-2. Tap the file to open it in **Safari**.
-3. Tap the **Share** button (box with an arrow pointing upward).
-4. Scroll down and tap **"Add to Home Screen"**.
-5. Tap **Add** in the top-right corner.
+1. Open your GitHub Pages link in **Safari**:
+   `https://<username>.github.io/budget_tracker_v2/`
+2. Tap the **Share** button (the square with an arrow pointing upwards).
+3. Scroll down and tap **"Add to Home Screen"**.
+4. Tap **Add** in the top-right corner.
+5. The app launches full-screen without Safari browser bars in pitch-black AMOLED mode.
+
+### Alternative (No Cloud / Local Only via Termux)
+If you prefer not to use GitHub Pages:
+1. On Android, open **Termux** and run:
+   ```bash
+   npx serve dist -p 8080
+   # or: python3 -m http.server 8080
+   ```
+2. Open `http://localhost:8080` in Chrome mobile.
+3. Chrome treats `localhost` as a secure origin, allowing you to tap **"Install app"** to home screen.
 
 ---
 
