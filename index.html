@@ -680,6 +680,302 @@ tr.active-row td {
   gap: 4px;
 }
 
+/* ==========================================================================
+   MODERN FINTECH STOCK CHART & ANALYTICS STYLES (ROBINHOOD / REVOLUT STYLE)
+   ========================================================================== */
+
+.stock-chart-card {
+  background: #000000;
+  border: 1px solid var(--line-high);
+  padding: 16px;
+  margin-bottom: 20px;
+  position: relative;
+  user-select: none;
+}
+
+.stock-chart-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  flex-wrap: wrap;
+  gap: 12px;
+  margin-bottom: 12px;
+}
+
+.stock-ticker-row {
+  display: flex;
+  align-items: baseline;
+  gap: 10px;
+  flex-wrap: wrap;
+}
+
+.stock-ticker-val {
+  font-size: 26px;
+  font-weight: 900;
+  color: var(--fg);
+  letter-spacing: -0.02em;
+}
+
+@media (min-width: 600px) {
+  .stock-ticker-val {
+    font-size: 32px;
+  }
+}
+
+.stock-delta-pill {
+  font-family: var(--font-mono);
+  font-size: 11px;
+  font-weight: 700;
+  padding: 3px 8px;
+  border-radius: 0;
+  display: inline-flex;
+  align-items: center;
+}
+.stock-delta-pill.good {
+  background: rgba(166, 227, 161, 0.15);
+  color: var(--acc);
+  border: 1px solid var(--acc);
+}
+.stock-delta-pill.bad {
+  background: rgba(243, 139, 168, 0.15);
+  color: var(--bad);
+  border: 1px solid var(--bad);
+}
+
+.stock-ticker-sub {
+  font-size: 11px;
+  color: var(--mut);
+  font-family: var(--font-mono);
+  margin-top: 3px;
+  display: flex;
+  gap: 8px;
+}
+.stock-mode-lbl {
+  color: var(--sapphire);
+  font-weight: 600;
+}
+
+.stock-cap-stat {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-end;
+  font-family: var(--font-mono);
+  font-size: 11px;
+}
+
+.stock-event-banner {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+  padding: 6px 10px;
+  background: #11111b;
+  border: 1px solid var(--line);
+  margin-bottom: 10px;
+}
+.event-chip {
+  font-family: var(--font-mono);
+  font-size: 10px;
+  font-weight: 700;
+  padding: 2px 6px;
+}
+.chip-in {
+  background: rgba(166, 227, 161, 0.18);
+  color: var(--acc);
+  border: 1px solid var(--acc);
+}
+.chip-out {
+  background: rgba(243, 139, 168, 0.18);
+  color: var(--bad);
+  border: 1px solid var(--bad);
+}
+
+/* Timeframe Segmented Control */
+.stock-timeframe-bar {
+  display: flex;
+  gap: 4px;
+  align-items: center;
+  border-top: 1px solid var(--line);
+  border-bottom: 1px solid var(--line);
+  padding: 6px 0;
+  margin-bottom: 12px;
+  overflow-x: auto;
+  -webkit-overflow-scrolling: touch;
+}
+.stock-pill {
+  background: transparent;
+  color: var(--mut);
+  border: 1px solid transparent;
+  font-family: var(--font-mono);
+  font-size: 11px;
+  font-weight: 700;
+  padding: 4px 10px;
+  cursor: pointer;
+  letter-spacing: 0.04em;
+  white-space: nowrap;
+}
+.stock-pill:hover {
+  color: var(--fg);
+  background: var(--card);
+}
+.stock-pill.active {
+  background: var(--card-alt);
+  color: var(--acc);
+  border-color: var(--acc);
+}
+
+.stock-custom-date {
+  margin-left: auto;
+  display: flex;
+  align-items: center;
+  gap: 4px;
+}
+.stock-custom-date input[type="date"] {
+  background: #000000;
+  border: 1px solid var(--line);
+  color: var(--fg);
+  font-size: 10px;
+  padding: 3px 5px;
+  font-family: var(--font-mono);
+}
+
+/* Responsive SVG Canvas Wrap */
+.stock-canvas-wrap {
+  position: relative;
+  width: 100%;
+  height: 240px;
+  touch-action: none; /* Crucial for smooth touch scrubbing on mobile */
+  cursor: crosshair;
+}
+
+@media (min-width: 600px) {
+  .stock-canvas-wrap {
+    height: 280px;
+  }
+}
+
+.stock-svg {
+  width: 100%;
+  height: 100%;
+  display: block;
+}
+
+/* Summary Metrics Strip */
+.stock-metrics-strip {
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  gap: 8px;
+  border-top: 1px solid var(--line);
+  padding-top: 12px;
+  margin-top: 12px;
+}
+
+@media (min-width: 600px) {
+  .stock-metrics-strip {
+    grid-template-columns: repeat(4, 1fr);
+  }
+}
+
+.stock-metric-item {
+  display: flex;
+  flex-direction: column;
+}
+.stock-metric-item .lbl {
+  font-size: 10px;
+  color: var(--mut);
+  text-transform: uppercase;
+  font-family: var(--font-mono);
+}
+.stock-metric-item .val {
+  font-size: 13px;
+  font-weight: 700;
+}
+
+/* Spend vs Funded Progress Cards */
+.spend-bars-grid {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+.spend-card {
+  background: var(--card);
+  border: 1px solid var(--line);
+  padding: 10px 14px;
+}
+.spend-card.overspent {
+  border-color: var(--bad);
+}
+.spend-card-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 8px;
+}
+.meter-track {
+  width: 100%;
+  height: 8px;
+  background: #1e1e2e;
+  overflow: hidden;
+  margin-bottom: 6px;
+}
+.meter-fill {
+  height: 100%;
+  transition: width 0.3s ease;
+}
+.meter-good {
+  background: var(--acc);
+}
+.meter-warn {
+  background: var(--peach);
+}
+.meter-bad {
+  background: var(--bad);
+}
+.spend-card-footer {
+  display: flex;
+  justify-content: space-between;
+  font-size: 11px;
+  color: var(--mut);
+}
+
+/* Physical Pool Asset Breakdown */
+.pool-dist-card {
+  background: var(--card);
+  border: 1px solid var(--line);
+  padding: 14px;
+}
+.pool-strip-bar {
+  display: flex;
+  height: 12px;
+  width: 100%;
+  background: #181825;
+  margin-bottom: 12px;
+  overflow: hidden;
+}
+.pool-strip-seg {
+  height: 100%;
+}
+.pool-asset-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+  gap: 10px;
+}
+.pool-asset-chip {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  background: #090a0f;
+  border: 1px solid var(--line);
+  padding: 8px 10px;
+  font-family: var(--font-mono);
+  font-size: 12px;
+}
+.color-dot {
+  width: 8px;
+  height: 8px;
+  display: inline-block;
+}
+
+
 
 </style>
 </head>
@@ -2829,17 +3125,68 @@ function compactINR(val) {
 }
 
 /**
- * Enhanced SVG cash trajectory chart with:
- * - Gradient area confidence bands
- * - Event glyphs (▲ income, ▼ bill)
- * - Interactive hover & touch scrubber with floating tooltip
+ * Calculates control points for Cubic Bézier curve smoothness (Monotone style).
  */
-function renderTrajectoryChart({ trajectory = [], width = 700, height = 240 }) {
+function getControlPoint(current, previous, next, reverse, smoothing = 0.16) {
+  const p = previous || current;
+  const n = next || current;
+  const opposedX = n.x - p.x;
+  const opposedY = n.y - p.y;
+  const angle = Math.atan2(opposedY, opposedX) + (reverse ? Math.PI : 0);
+  const length = Math.sqrt(Math.pow(opposedX, 2) + Math.pow(opposedY, 2)) * smoothing;
+  const x = current.x + Math.cos(angle) * length;
+  const y = current.y + Math.sin(angle) * length;
+  return [x, y];
+}
+
+/**
+ * Converts an array of { x, y } points into a smooth SVG Cubic Bézier path string ('C' command).
+ */
+function getSmoothPathData(points, smoothing = 0.16) {
+  if (!points || !points.length) return '';
+  if (points.length === 1) return `M ${points[0].x.toFixed(1)} ${points[0].y.toFixed(1)}`;
+
+  return points.reduce((acc, point, i, a) => {
+    if (i === 0) return `M ${point.x.toFixed(1)} ${point.y.toFixed(1)}`;
+    const [cpsX, cpsY] = getControlPoint(a[i - 1], a[i - 2], point, false, smoothing);
+    const [cpeX, cpeY] = getControlPoint(point, a[i - 1], a[i + 1], true, smoothing);
+    return `${acc} C ${cpsX.toFixed(1)},${cpsY.toFixed(1)} ${cpeX.toFixed(1)},${cpeY.toFixed(1)} ${point.x.toFixed(1)},${point.y.toFixed(1)}`;
+  }, '');
+}
+
+/**
+ * Modern, Robinhood/Revolut-grade stock trajectory graph.
+ * Features:
+ * - Fluid Monotone Cubic Bézier curve
+ * - Ambient emerald glowing area fill fading to AMOLED black
+ * - Cap risk floor & shaded confidence corridor
+ * - Live top header readout (no thumb-blocking floating popups)
+ * - Mobile-first responsive aspect ratio (tall & tactile)
+ * - Stock timeframe segmented pills
+ * - Summary metrics strip (peak, floor, net cashflow)
+ */
+function renderTrajectoryChart(options = {}) {
+  // Support either raw trajectory array or projection object
+  const trajectory = Array.isArray(options) ? options : (options.trajectory || []);
+  const daysToTarget = options.daysToTarget ?? (trajectory.length ? trajectory.length - 1 : 0);
+  const currentTotal = options.currentTotal ?? (trajectory[0]?.pace ?? 0);
+  const horizonDate = options.targetDate || options.horizonDate || trajectory[trajectory.length - 1]?.date || '';
+
   if (!trajectory.length) {
-    return `<div class="sub" style="text-align:center;padding:30px;">No trajectory points for this horizon.</div>`;
+    return `
+      <div class="stock-chart-card empty-chart">
+        <div style="padding:40px 20px;text-align:center;color:var(--mut);font-family:var(--font-mono);">
+          <div style="font-size:14px;font-weight:700;color:var(--fg);margin-bottom:6px;">No Trajectory Data</div>
+          <div style="font-size:12px;">Add physical accounts and budgets to project future cash flow.</div>
+        </div>
+      </div>
+    `;
   }
 
-  const padding = { top: 25, right: 30, bottom: 40, left: 60 };
+  // ViewBox layout (responsive 800 x 320 for desktop & high-res mobile)
+  const width = 800;
+  const height = 300;
+  const padding = { top: 20, right: 35, bottom: 35, left: 55 };
   const plotW = width - padding.left - padding.right;
   const plotH = height - padding.top - padding.bottom;
 
@@ -2853,80 +3200,74 @@ function renderTrajectoryChart({ trajectory = [], width = 700, height = 240 }) {
     if (pt.pace > maxVal) maxVal = pt.pace;
   }
 
-  // Ensure breathing room around bounds
+  // Ensure breathing room around min/max
   minVal = Math.min(minVal, 0);
-  const margin = (maxVal - minVal) * 0.08 || 500;
-  maxVal = Math.max(maxVal + margin, minVal + 1000);
-  minVal = Math.min(minVal - margin * 0.5, 0);
-
+  const valMargin = (maxVal - minVal) * 0.1 || 1000;
+  maxVal = Math.max(maxVal + valMargin, minVal + 2000);
+  minVal = Math.min(minVal - valMargin * 0.4, 0);
   const valRange = maxVal - minVal || 1;
+
   const getY = (v) => padding.top + plotH - ((v - minVal) / valRange) * plotH;
   const getX = (i) => padding.left + (i / Math.max(1, trajectory.length - 1)) * plotW;
   const zeroY = getY(0);
 
-  let capPath = '';
-  let pacePath = '';
-  let paceAreaPath = '';
-  let capAreaPath = '';
-
-  const eventMarkers = [];
+  // Map trajectory to {x, y} coordinate sets
+  const pacePoints = [];
+  const capPoints = [];
+  const eventPins = [];
 
   trajectory.forEach((pt, idx) => {
     const x = getX(idx);
-    const yCap = Math.min(height, Math.max(0, getY(pt.cap)));
     const yPace = Math.min(height, Math.max(0, getY(pt.pace)));
+    const yCap = Math.min(height, Math.max(0, getY(pt.cap)));
 
-    if (idx === 0) {
-      capPath += `M ${x.toFixed(1)} ${yCap.toFixed(1)}`;
-      pacePath += `M ${x.toFixed(1)} ${yPace.toFixed(1)}`;
-      paceAreaPath += `M ${x.toFixed(1)} ${getY(minVal).toFixed(1)} L ${x.toFixed(1)} ${yPace.toFixed(1)}`;
-      capAreaPath += `M ${x.toFixed(1)} ${getY(minVal).toFixed(1)} L ${x.toFixed(1)} ${yCap.toFixed(1)}`;
-    } else {
-      capPath += ` L ${x.toFixed(1)} ${yCap.toFixed(1)}`;
-      pacePath += ` L ${x.toFixed(1)} ${yPace.toFixed(1)}`;
-      paceAreaPath += ` L ${x.toFixed(1)} ${yPace.toFixed(1)}`;
-      capAreaPath += ` L ${x.toFixed(1)} ${yCap.toFixed(1)}`;
-    }
+    pacePoints.push({ x, y: yPace, data: pt, index: idx });
+    capPoints.push({ x, y: yCap, data: pt, index: idx });
 
     if (pt.events && pt.events.length) {
       pt.events.forEach((ev) => {
-        eventMarkers.push({
+        eventPins.push({
           x,
           y: yPace,
           date: pt.date,
           direction: ev.direction,
           name: ev.name,
-          amount: ev.amount
+          amount: ev.amount,
+          type: ev.type
         });
       });
     }
   });
 
-  const lastX = getX(trajectory.length - 1);
-  const baseBottomY = getY(minVal);
-  paceAreaPath += ` L ${lastX.toFixed(1)} ${baseBottomY.toFixed(1)} Z`;
-  capAreaPath += ` L ${lastX.toFixed(1)} ${baseBottomY.toFixed(1)} Z`;
+  // Generate smooth cubic curves
+  const paceCurve = getSmoothPathData(pacePoints);
+  const capCurve = getSmoothPathData(capPoints);
 
-  // X Axis Date ticks
-  const numDateTicks = Math.min(6, trajectory.length);
+  // Bottom baseline Y for area fill
+  const baseY = getY(minVal).toFixed(1);
+  const firstX = pacePoints[0].x.toFixed(1);
+  const lastX = pacePoints[pacePoints.length - 1].x.toFixed(1);
+
+  const paceAreaPath = `${paceCurve} L ${lastX} ${baseY} L ${firstX} ${baseY} Z`;
+
+  // Shaded corridor between Pace and Cap (Confidence Corridor)
+  const capReversed = [...capPoints].reverse();
+  const capReversePath = capReversed.map((p, i) => `${i === 0 ? 'L' : 'L'} ${p.x.toFixed(1)} ${p.y.toFixed(1)}`).join(' ');
+  const corridorPath = `${paceCurve} ${capReversePath} Z`;
+
+  // X Axis Date Ticks (5-6 evenly spaced)
+  const numDateTicks = Math.min(5, trajectory.length);
   const dateStep = Math.max(1, Math.floor((trajectory.length - 1) / (numDateTicks - 1)));
   const xLabels = [];
   for (let i = 0; i < trajectory.length; i += dateStep) {
-    xLabels.push({
-      x: getX(i),
-      text: shortDate(trajectory[i].date)
-    });
+    xLabels.push({ x: getX(i), text: shortDate(trajectory[i].date) });
   }
-  // Ensure last date is included
-  const lastIndex = trajectory.length - 1;
-  if (!xLabels.some((l) => Math.abs(l.x - getX(lastIndex)) < 30)) {
-    xLabels.push({
-      x: getX(lastIndex),
-      text: shortDate(trajectory[lastIndex].date)
-    });
+  const lastIdx = trajectory.length - 1;
+  if (!xLabels.some((l) => Math.abs(l.x - getX(lastIdx)) < 40)) {
+    xLabels.push({ x: getX(lastIdx), text: shortDate(trajectory[lastIdx].date) });
   }
 
-  // Y Axis ticks (4 levels)
+  // Y Axis Ticks (4 levels)
   const yTicks = [
     minVal,
     minVal + valRange * 0.33,
@@ -2934,239 +3275,441 @@ function renderTrajectoryChart({ trajectory = [], width = 700, height = 240 }) {
     maxVal
   ];
 
-  const chartId = 'traj-' + Math.random().toString(36).slice(2, 7);
+  // Target metrics
+  const targetPt = trajectory[trajectory.length - 1];
+  const targetPace = targetPt.pace;
+  const targetCap = targetPt.cap;
+  const delta = targetPace - currentTotal;
+  const deltaPct = currentTotal > 0 ? (delta / currentTotal) * 100 : 0;
+  const isPositive = delta >= 0;
 
-  const escAttr = (s) => String(s).replace(/"/g, '&quot;');
+  // Range extremes for summary strip
+  const peakVal = Math.max(...trajectory.map((t) => t.pace));
+  const troughVal = Math.min(...trajectory.map((t) => t.cap));
+  const totalEventsIn = eventPins.filter((e) => e.direction === 'in').reduce((s, e) => s + e.amount, 0);
+  const totalEventsOut = eventPins.filter((e) => e.direction === 'out').reduce((s, e) => s + e.amount, 0);
+
+  const chartId = 'stk-' + Math.random().toString(36).slice(2, 7);
+  const serializedPoints = JSON.stringify(trajectory.map((t, idx) => ({
+    x: getX(idx),
+    date: t.date,
+    pace: t.pace,
+    cap: t.cap,
+    events: t.events || []
+  }))).replace(/"/g, '&quot;');
 
   return `
-    <div class="interactive-chart-container" style="position:relative;user-select:none;">
-      <!-- Floating AMOLED Scrubber Tooltip -->
-      <div class="chart-tooltip" style="display:none;position:absolute;top:10px;left:70px;background:#11111b;border:2px solid #74c7ec;padding:8px 12px;font-family:monospace;font-size:11px;z-index:20;box-shadow:0 6px 20px rgba(0,0,0,0.8);pointer-events:none;min-width:180px;">
-        <div class="tt-date" style="color:#a6adc8;font-weight:700;margin-bottom:4px;border-bottom:1px solid #313244;padding-bottom:2px;"></div>
-        <div style="display:flex;justify-content:space-between;gap:8px;margin-bottom:2px;">
-          <span style="color:#a6e3a1;font-weight:700;">■ Pace:</span>
-          <span class="tt-pace" style="color:#a6e3a1;font-weight:700;"></span>
+    <div class="stock-chart-card interactive-chart-container" id="${chartId}" data-chart-id="${chartId}" data-points="${serializedPoints}" data-current="${currentTotal}">
+      
+      <!-- Live Top Financial Header (Stock Ticker) -->
+      <div class="stock-chart-header">
+        <div class="stock-header-main">
+          <div class="stock-ticker-row">
+            <span class="stock-ticker-val mono" id="${chartId}-val">${formatINR(targetPace)}</span>
+            <span class="stock-delta-pill ${isPositive ? 'good' : 'bad'}" id="${chartId}-delta">
+              ${isPositive ? '+' : ''}${formatINR(delta)} (${isPositive ? '+' : ''}${deltaPct.toFixed(1)}%)
+            </span>
+          </div>
+          <div class="stock-ticker-sub">
+            <span class="stock-date-lbl" id="${chartId}-date">${shortDate(horizonDate)} (${daysToTarget} days out)</span>
+            <span class="stock-mode-lbl" id="${chartId}-mode">Expected Pace</span>
+          </div>
         </div>
-        <div style="display:flex;justify-content:space-between;gap:8px;margin-bottom:4px;">
-          <span style="color:#f38ba8;font-weight:700;">- - Cap:</span>
-          <span class="tt-cap" style="color:#f38ba8;"></span>
+
+        <!-- Cap Floor Comparison Pill -->
+        <div class="stock-cap-stat">
+          <span style="font-size:10px;color:var(--bad);text-transform:uppercase;font-weight:700;">Worst-Case Floor</span>
+          <span class="mono" id="${chartId}-cap" style="font-weight:700;color:var(--bad);">${formatINR(targetCap)}</span>
         </div>
-        <div class="tt-events" style="border-top:1px solid #313244;padding-top:4px;margin-top:4px;color:#cdd6f4;"></div>
       </div>
 
-      <svg viewBox="0 0 ${width} ${height}" style="width:100%;height:auto;display:block;background:#050608;border:1px solid #313244;">
-        <defs>
-          <!-- Gradient for Pace Area -->
-          <linearGradient id="${chartId}-pace-grad" x1="0" y1="0" x2="0" y2="1">
-            <stop offset="0%" stop-color="#a6e3a1" stop-opacity="0.22"/>
-            <stop offset="100%" stop-color="#a6e3a1" stop-opacity="0.01"/>
-          </linearGradient>
-          <!-- Gradient for Cap Area -->
-          <linearGradient id="${chartId}-cap-grad" x1="0" y1="0" x2="0" y2="1">
-            <stop offset="0%" stop-color="#f38ba8" stop-opacity="0.14"/>
-            <stop offset="100%" stop-color="#f38ba8" stop-opacity="0.00"/>
-          </linearGradient>
-        </defs>
+      <!-- Active Event Banner (when scrubbing over a scheduled event) -->
+      <div class="stock-event-banner" id="${chartId}-event-banner" style="display:none;"></div>
 
-        <!-- Y Axis Grid Lines & Text -->
-        ${yTicks.map((v) => {
-          const y = getY(v);
-          return `
-            <line x1="${padding.left}" y1="${y}" x2="${width - padding.right}" y2="${y}" stroke="#1e1e2e" stroke-dasharray="2,2"/>
-            <text x="${padding.left - 8}" y="${y + 4}" fill="#6c7086" font-size="10" font-family="monospace" text-anchor="end">${compactINR(v)}</text>
-          `;
-        }).join('')}
-
-        <!-- Zero Baseline -->
-        ${zeroY >= padding.top && zeroY <= padding.top + plotH ? `
-          <line x1="${padding.left}" y1="${zeroY}" x2="${width - padding.right}" y2="${zeroY}" stroke="#585b70" stroke-width="1.5"/>
-        ` : ''}
-
-        <!-- Shaded Area Fills -->
-        <path d="${paceAreaPath}" fill="url(#${chartId}-pace-grad)"/>
-        <path d="${capAreaPath}" fill="url(#${chartId}-cap-grad)"/>
-
-        <!-- Cap Floor Curve (Pink/Red Dash) -->
-        <path d="${capPath}" fill="none" stroke="#f38ba8" stroke-width="2" stroke-dasharray="4,3"/>
-
-        <!-- Pace Expected Curve (Green Solid) -->
-        <path d="${pacePath}" fill="none" stroke="#a6e3a1" stroke-width="2.5"/>
-
-        <!-- Event Glyphs on Curve -->
-        ${eventMarkers.map((m) => `
-          <polygon points="${m.direction === 'in' ? `${m.x},${m.y - 8} ${m.x - 4},${m.y} ${m.x + 4},${m.y}` : `${m.x - 4},${m.y - 6} ${m.x + 4},${m.y - 6} ${m.x},${m.y + 2}`}" fill="${m.direction === 'in' ? '#a6e3a1' : '#f38ba8'}" stroke="#000" stroke-width="1"/>
-        `).join('')}
-
-        <!-- X Axis Date Labels -->
-        ${xLabels.map((l) => `
-          <text x="${l.x}" y="${height - 12}" fill="#a6adc8" font-size="10" font-family="monospace" text-anchor="middle">${l.text}</text>
-        `).join('')}
-
-        <!-- Scrubber Vertical Line (Dynamic) -->
-        <line class="chart-scrubber" x1="-100" y1="${padding.top}" x2="-100" y2="${padding.top + plotH}" stroke="#74c7ec" stroke-width="1.5" stroke-dasharray="2,2" style="display:none;"/>
-
-        <!-- Transparent Hover Columns for High-Precision Scrubbing -->
-        ${trajectory.map((pt, i) => {
-          const colW = plotW / Math.max(1, trajectory.length - 1);
-          const colX = getX(i) - colW / 2;
-          return `
-            <rect x="${colX}" y="${padding.top}" width="${colW}" height="${plotH}" fill="transparent" style="cursor:crosshair;" data-point-x="${getX(i)}" data-date="${pt.date}" data-pace="${pt.pace}" data-cap="${pt.cap}" data-events="${escAttr(JSON.stringify(pt.events || []))}"/>
-          `;
-        }).join('')}
-      </svg>
-
-      <!-- Chart Legend -->
-      <div style="display:flex;justify-content:center;gap:18px;margin-top:8px;font-family:monospace;font-size:11px;flex-wrap:wrap;">
-        <span style="color:#a6e3a1;font-weight:700;">■ Pace (Expected Trajectory)</span>
-        <span style="color:#f38ba8;font-weight:700;">- - Cap (Conservative Floor)</span>
-        <span style="color:#a6e3a1;">▲ Income Scheduled</span>
-        <span style="color:#f38ba8;">▼ Bill / Debt Due</span>
+      <!-- Timeframe Segmented Control (Stock Pills) -->
+      <div class="stock-timeframe-bar">
+        <button class="stock-pill ${daysToTarget === 7 ? 'active' : ''}" data-set-days="7">7D</button>
+        <button class="stock-pill ${daysToTarget === 14 ? 'active' : ''}" data-set-days="14">14D</button>
+        <button class="stock-pill ${daysToTarget === 30 ? 'active' : ''}" data-set-days="30">1M</button>
+        <button class="stock-pill ${daysToTarget === 60 ? 'active' : ''}" data-set-days="60">2M</button>
+        <button class="stock-pill ${daysToTarget === 90 ? 'active' : ''}" data-set-days="90">3M</button>
+        <button class="stock-pill" data-set-cycle="1">EOC</button>
+        <div class="stock-custom-date">
+          <span style="font-size:10px;color:var(--mut);">📅</span>
+          <input type="date" id="horizon-date-picker" value="${horizonDate}" title="Pick custom date">
+        </div>
       </div>
+
+      <!-- SVG Graph Canvas -->
+      <div class="stock-canvas-wrap">
+        <svg viewBox="0 0 ${width} ${height}" class="stock-svg" preserveAspectRatio="none">
+          <defs>
+            <!-- Ambient Glowing Green Area Gradient -->
+            <linearGradient id="${chartId}-pace-glow" x1="0" y1="0" x2="0" y2="1">
+              <stop offset="0%" stop-color="#a6e3a1" stop-opacity="0.28"/>
+              <stop offset="50%" stop-color="#a6e3a1" stop-opacity="0.08"/>
+              <stop offset="100%" stop-color="#a6e3a1" stop-opacity="0.00"/>
+            </linearGradient>
+
+            <!-- Cap Risk Corridor Gradient -->
+            <linearGradient id="${chartId}-corridor" x1="0" y1="0" x2="0" y2="1">
+              <stop offset="0%" stop-color="#74c7ec" stop-opacity="0.12"/>
+              <stop offset="100%" stop-color="#f38ba8" stop-opacity="0.03"/>
+            </linearGradient>
+          </defs>
+
+          <!-- Subtle Horizontal Grid Lines & Y Axis Ticks -->
+          ${yTicks.map((v) => {
+            const y = getY(v);
+            return `
+              <line x1="${padding.left}" y1="${y}" x2="${width - padding.right}" y2="${y}" stroke="#1e1e2e" stroke-dasharray="3,3" stroke-width="1"/>
+              <text x="${padding.left - 8}" y="${y + 4}" fill="#6c7086" font-size="10" font-family="monospace" text-anchor="end">${compactINR(v)}</text>
+            `;
+          }).join('')}
+
+          <!-- Zero Baseline (if in range) -->
+          ${zeroY >= padding.top && zeroY <= padding.top + plotH ? `
+            <line x1="${padding.left}" y1="${zeroY}" x2="${width - padding.right}" y2="${zeroY}" stroke="#585b70" stroke-width="1.2" stroke-dasharray="2,2"/>
+          ` : ''}
+
+          <!-- Shaded Risk Corridor between Cap & Pace -->
+          <path d="${corridorPath}" fill="url(#${chartId}-corridor)"/>
+
+          <!-- Glowing Gradient Fill under Pace Curve -->
+          <path d="${paceAreaPath}" fill="url(#${chartId}-pace-glow)"/>
+
+          <!-- Cap Risk Floor Curve (Dashed Coral Line) -->
+          <path d="${capCurve}" fill="none" stroke="#f38ba8" stroke-width="1.8" stroke-dasharray="5,4" stroke-opacity="0.85"/>
+
+          <!-- Pace Expected Trajectory Curve (Crisp Emerald Line) -->
+          <path d="${paceCurve}" fill="none" stroke="#a6e3a1" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"/>
+
+          <!-- Milestone Event Pins on Curve -->
+          ${eventPins.map((m) => `
+            <g transform="translate(${m.x.toFixed(1)}, ${m.y.toFixed(1)})">
+              <circle r="4.5" fill="${m.direction === 'in' ? '#a6e3a1' : '#f38ba8'}" stroke="#000000" stroke-width="1.5"/>
+            </g>
+          `).join('')}
+
+          <!-- X Axis Date Labels -->
+          ${xLabels.map((l) => `
+            <text x="${l.x}" y="${height - 10}" fill="#a6adc8" font-size="10" font-family="monospace" text-anchor="middle">${l.text}</text>
+          `).join('')}
+
+          <!-- Dynamic Interactive Crosshair Line -->
+          <line class="stock-crosshair-v" x1="-100" y1="${padding.top}" x2="-100" y2="${padding.top + plotH}" stroke="#74c7ec" stroke-width="1.5" stroke-dasharray="3,3" style="display:none;"/>
+
+          <!-- Glowing Cursor Pip on Curve -->
+          <g class="stock-cursor-pip" style="display:none;" transform="translate(-100, -100)">
+            <circle r="12" fill="#a6e3a1" fill-opacity="0.25"/>
+            <circle r="5" fill="#a6e3a1" stroke="#000000" stroke-width="2"/>
+          </g>
+        </svg>
+      </div>
+
+      <!-- Bottom Range Summary Metrics Strip -->
+      <div class="stock-metrics-strip">
+        <div class="stock-metric-item">
+          <span class="lbl">Horizon Peak</span>
+          <span class="val good mono">${formatINR(peakVal)}</span>
+        </div>
+        <div class="stock-metric-item">
+          <span class="lbl">Drawdown Floor</span>
+          <span class="val bad mono">${formatINR(troughVal)}</span>
+        </div>
+        <div class="stock-metric-item">
+          <span class="lbl">Scheduled In</span>
+          <span class="val good mono">+${formatINR(totalEventsIn)}</span>
+        </div>
+        <div class="stock-metric-item">
+          <span class="lbl">Scheduled Out</span>
+          <span class="val bad mono">−${formatINR(totalEventsOut)}</span>
+        </div>
+      </div>
+
     </div>
   `;
 }
 
 /**
- * Attaches mouse & touch interaction handlers for the trajectory chart.
+ * Attaches modern, continuous pointer/touch scrubbing to the stock chart.
  */
 function attachChartInteractions(rootElement) {
-  rootElement.querySelectorAll('.interactive-chart-container').forEach((wrap) => {
-    const tooltip = wrap.querySelector('.chart-tooltip');
-    const scrubber = wrap.querySelector('.chart-scrubber');
-    const dateEl = wrap.querySelector('.tt-date');
-    const paceEl = wrap.querySelector('.tt-pace');
-    const capEl = wrap.querySelector('.tt-cap');
-    const eventsEl = wrap.querySelector('.tt-events');
+  rootElement.querySelectorAll('.stock-chart-card').forEach((card) => {
+    const rawData = card.getAttribute('data-points');
+    if (!rawData) return;
 
-    if (!tooltip || !scrubber) return;
+    let points = [];
+    try {
+      points = JSON.parse(rawData);
+    } catch (e) {
+      return;
+    }
+    if (!points.length) return;
 
-    wrap.querySelectorAll('[data-point-x]').forEach((el) => {
-      const onMove = () => {
-        const x = Number(el.getAttribute('data-point-x'));
-        const date = el.getAttribute('data-date');
-        const pace = Number(el.getAttribute('data-pace'));
-        const cap = Number(el.getAttribute('data-cap'));
-        let events = [];
-        try {
-          events = JSON.parse(el.getAttribute('data-events') || '[]');
-        } catch (e) {}
+    const currentTotal = Number(card.getAttribute('data-current')) || 0;
+    const canvasWrap = card.querySelector('.stock-canvas-wrap');
+    const crosshairV = card.querySelector('.stock-crosshair-v');
+    const cursorPip = card.querySelector('.stock-cursor-pip');
+    const valEl = card.querySelector('[id$="-val"]');
+    const deltaEl = card.querySelector('[id$="-delta"]');
+    const dateEl = card.querySelector('[id$="-date"]');
+    const capEl = card.querySelector('[id$="-cap"]');
+    const modeEl = card.querySelector('[id$="-mode"]');
+    const bannerEl = card.querySelector('[id$="-event-banner"]');
 
-        scrubber.style.display = 'block';
-        scrubber.setAttribute('x1', x);
-        scrubber.setAttribute('x2', x);
+    if (!canvasWrap || !crosshairV || !cursorPip) return;
 
-        if (dateEl) dateEl.textContent = date;
-        if (paceEl) paceEl.textContent = '₹' + Math.round(pace).toLocaleString('en-IN');
-        if (capEl) capEl.textContent = '₹' + Math.round(cap).toLocaleString('en-IN');
+    // Default target state to revert on pointer up/leave
+    const defaultPt = points[points.length - 1];
+    const defaultPace = defaultPt.pace;
+    const defaultCap = defaultPt.cap;
+    const defaultDate = defaultPt.date;
+    const defaultDelta = defaultPace - currentTotal;
+    const defaultPct = currentTotal > 0 ? (defaultDelta / currentTotal) * 100 : 0;
+    const defaultIsPos = defaultDelta >= 0;
 
-        if (eventsEl) {
-          if (events && events.length) {
-            eventsEl.style.display = 'block';
-            eventsEl.innerHTML = events.map((ev) =>
-              '<div style="margin-top:2px;font-size:10px;">' +
-              (ev.direction === 'in' ? '<span style="color:#a6e3a1;">+ ' : '<span style="color:#f38ba8;">− ') +
-              (ev.name || 'Event') + ': ₹' + Number(ev.amount).toLocaleString('en-IN') + '</span></div>'
-            ).join('');
+    let lastIndex = -1;
+
+    const resetToDefault = () => {
+      crosshairV.style.display = 'none';
+      cursorPip.style.display = 'none';
+      if (bannerEl) bannerEl.style.display = 'none';
+
+      if (valEl) valEl.textContent = formatINR(defaultPace);
+      if (deltaEl) {
+        deltaEl.className = `stock-delta-pill ${defaultIsPos ? 'good' : 'bad'}`;
+        deltaEl.textContent = `${defaultIsPos ? '+' : ''}${formatINR(defaultDelta)} (${defaultIsPos ? '+' : ''}${defaultPct.toFixed(1)}%)`;
+      }
+      if (dateEl) dateEl.textContent = `${shortDate(defaultDate)} (${points.length - 1} days out)`;
+      if (capEl) capEl.textContent = formatINR(defaultCap);
+      if (modeEl) modeEl.textContent = 'Expected Pace';
+      lastIndex = -1;
+    };
+
+    const updateScrub = (clientX) => {
+      const rect = canvasWrap.getBoundingClientRect();
+      if (!rect.width) return;
+
+      const relX = Math.max(0, Math.min(1, (clientX - rect.left) / rect.width));
+      const idx = Math.round(relX * (points.length - 1));
+      const pt = points[idx];
+      if (!pt) return;
+
+      // Haptic tick when crossing days on mobile
+      if (idx !== lastIndex) {
+        lastIndex = idx;
+        if (typeof navigator !== 'undefined' && navigator.vibrate) {
+          if (pt.events && pt.events.length) {
+            navigator.vibrate(8); // Stronger pulse for event dates
           } else {
-            eventsEl.style.display = 'none';
+            navigator.vibrate(3);
           }
         }
+      }
 
-        tooltip.style.display = 'block';
-        const rect = wrap.getBoundingClientRect();
-        let ttLeft = (x / 700) * rect.width - 90;
-        ttLeft = Math.max(10, Math.min(rect.width - 200, ttLeft));
-        tooltip.style.left = ttLeft + 'px';
-      };
+      // Calculate SVG coordinates
+      const svgX = pt.x;
+      // Estimate Y proportional from height
+      // Pace Y
+      const minVal = Math.min(...points.map((p) => Math.min(p.pace, p.cap)), 0);
+      const maxVal = Math.max(...points.map((p) => Math.max(p.pace, p.cap)), minVal + 1000);
+      const valRange = maxVal - minVal || 1;
+      const padding = { top: 20, bottom: 35 };
+      const plotH = 300 - padding.top - padding.bottom;
+      const svgY = padding.top + plotH - ((pt.pace - minVal) / valRange) * plotH;
 
-      el.addEventListener('mousemove', onMove);
-      el.addEventListener('touchmove', onMove);
+      // Position crosshair & glowing pip
+      crosshairV.style.display = 'block';
+      crosshairV.setAttribute('x1', svgX);
+      crosshairV.setAttribute('x2', svgX);
+
+      cursorPip.style.display = 'block';
+      cursorPip.setAttribute('transform', `translate(${svgX.toFixed(1)}, ${svgY.toFixed(1)})`);
+
+      // Update Header Ticker
+      const scrubDelta = pt.pace - currentTotal;
+      const scrubPct = currentTotal > 0 ? (scrubDelta / currentTotal) * 100 : 0;
+      const scrubIsPos = scrubDelta >= 0;
+
+      if (valEl) valEl.textContent = formatINR(pt.pace);
+      if (deltaEl) {
+        deltaEl.className = `stock-delta-pill ${scrubIsPos ? 'good' : 'bad'}`;
+        deltaEl.textContent = `${scrubIsPos ? '+' : ''}${formatINR(scrubDelta)} (${scrubIsPos ? '+' : ''}${scrubPct.toFixed(1)}%)`;
+      }
+      if (dateEl) dateEl.textContent = `${shortDate(pt.date)} (${idx}d from today)`;
+      if (capEl) capEl.textContent = formatINR(pt.cap);
+      if (modeEl) modeEl.textContent = `Scrubbing Day ${idx + 1}`;
+
+      // Update Event Banner
+      if (bannerEl) {
+        if (pt.events && pt.events.length) {
+          bannerEl.style.display = 'flex';
+          bannerEl.innerHTML = pt.events.map((ev) => `
+            <span class="event-chip ${ev.direction === 'in' ? 'chip-in' : 'chip-out'}">
+              ${ev.direction === 'in' ? '▲' : '▼'} ${ev.name || 'Event'}: ${ev.direction === 'in' ? '+' : '−'}${formatINR(ev.amount)}
+            </span>
+          `).join('');
+        } else {
+          bannerEl.style.display = 'none';
+        }
+      }
+    };
+
+    // Continuous pointer events (handles mouse and touch smoothly with touch-action: none)
+    let isTracking = false;
+
+    canvasWrap.addEventListener('pointerdown', (e) => {
+      isTracking = true;
+      canvasWrap.setPointerCapture(e.pointerId);
+      updateScrub(e.clientX);
     });
 
-    wrap.addEventListener('mouseleave', () => {
-      tooltip.style.display = 'none';
-      scrubber.style.display = 'none';
+    canvasWrap.addEventListener('pointermove', (e) => {
+      if (isTracking || e.pointerType === 'mouse') {
+        updateScrub(e.clientX);
+      }
+    });
+
+    canvasWrap.addEventListener('pointerup', (e) => {
+      isTracking = false;
+      try {
+        canvasWrap.releasePointerCapture(e.pointerId);
+      } catch (err) {}
+      resetToDefault();
+    });
+
+    canvasWrap.addEventListener('pointercancel', () => {
+      isTracking = false;
+      resetToDefault();
+    });
+
+    canvasWrap.addEventListener('pointerleave', () => {
+      if (!isTracking) {
+        resetToDefault();
+      }
     });
   });
 }
 
 /**
- * Horizontal spend vs funded bar chart for budgets & envelopes.
+ * Modern Spend vs Funded progress cards with high-contrast brutalist meters.
  */
-function renderSpendBarChart({ budgetDetails = [], width = 700 }) {
-  if (!budgetDetails.length) {
-    return `<div class="sub">No budgets configured yet.</div>`;
+function renderSpendBarChart(options = {}) {
+  // Gracefully handle either { budgetDetails } or { budgets, transactions } or array
+  let details = [];
+  if (Array.isArray(options)) {
+    details = options;
+  } else if (Array.isArray(options.budgetDetails)) {
+    details = options.budgetDetails;
+  } else if (Array.isArray(options.budgets)) {
+    const txs = options.transactions || [];
+    details = options.budgets.map((b) => {
+      const spent = txs.filter((t) => t.type === 'expense' && t.budgetId === b.id).reduce((s, t) => s + (Number(t.amount) || 0), 0);
+      const funded = Number(b.amount) || 0;
+      return {
+        id: b.id,
+        name: b.name,
+        kind: b.kind,
+        state: { spent, funded: funded || spent, B: funded || spent }
+      };
+    });
   }
 
-  const rowH = 34;
-  const padding = { top: 12, right: 100, bottom: 12, left: 120 };
-  const totalH = padding.top + padding.bottom + budgetDetails.length * rowH;
-  const barW = width - padding.left - padding.right;
+  if (!details.length) {
+    return `<div style="padding:24px;text-align:center;color:var(--mut);font-family:var(--font-mono);">No active budgets or envelopes configured.</div>`;
+  }
 
   return `
-    <svg viewBox="0 0 ${width} ${totalH}" style="width:100%;height:auto;display:block;background:#050608;border:1px solid #313244;">
-      ${budgetDetails.map((b, idx) => {
-        const y = padding.top + idx * rowH;
-        const total = b.kind === 'daily' ? b.state.B : b.state.funded;
-        const spent = b.kind === 'daily' ? b.state.spent : b.state.spent;
-        const pct = total > 0 ? Math.min(100, (spent / total) * 100) : (spent > 0 ? 100 : 0);
+    <div class="spend-bars-grid">
+      ${details.map((b) => {
+        const total = b.kind === 'daily' ? (b.state.B || 0) : (b.state.funded || 0);
+        const spent = b.state ? (b.state.spent || 0) : 0;
+        const pct = total > 0 ? Math.min(100, Math.round((spent / total) * 100)) : (spent > 0 ? 100 : 0);
         const isOver = spent > total;
-        const fillW = Math.max(0, (pct / 100) * barW);
+        const isWarn = pct >= 80 && !isOver;
 
         return `
-          <!-- Label -->
-          <text x="${padding.left - 10}" y="${y + 16}" fill="#cdd6f4" font-size="11" font-family="monospace" text-anchor="end">${b.name}</text>
-          
-          <!-- Background bar -->
-          <rect x="${padding.left}" y="${y + 6}" width="${barW}" height="14" fill="#181825" stroke="#313244" stroke-width="1"/>
-          
-          <!-- Filled bar -->
-          <rect x="${padding.left}" y="${y + 6}" width="${fillW}" height="14" fill="${isOver ? '#f38ba8' : '#a6e3a1'}"/>
-          
-          <!-- Value Text -->
-          <text x="${width - padding.right + 8}" y="${y + 17}" fill="${isOver ? '#f38ba8' : '#a6adc8'}" font-size="11" font-family="monospace">${formatINR(spent)} / ${formatINR(total)}</text>
+          <div class="spend-card ${isOver ? 'overspent' : ''}">
+            <div class="spend-card-header">
+              <div>
+                <strong style="color:var(--fg);font-size:13px;">${b.name}</strong>
+                <span class="badge ${b.kind === 'daily' ? 'green' : 'blue'}" style="margin-left:6px;font-size:9px;">${b.kind.toUpperCase()}</span>
+              </div>
+              <span class="mono" style="font-weight:700;color:${isOver ? 'var(--bad)' : isWarn ? 'var(--peach)' : 'var(--acc)'};font-size:12px;">
+                ${pct}% ${isOver ? 'OVER' : 'USED'}
+              </span>
+            </div>
+
+            <!-- Segmented High-Contrast Meter -->
+            <div class="meter-track">
+              <div class="meter-fill ${isOver ? 'meter-bad' : isWarn ? 'meter-warn' : 'meter-good'}" style="width:${pct}%;"></div>
+            </div>
+
+            <div class="spend-card-footer mono">
+              <span>Spent: <strong>${formatINR(spent)}</strong></span>
+              <span>Funded: <strong>${formatINR(total)}</strong></span>
+            </div>
+          </div>
         `;
       }).join('')}
-    </svg>
+    </div>
   `;
 }
 
 /**
- * Segmented proportion bar representing distribution across physical pools.
+ * Modern Physical Pool Distribution Cards & Proportional Strip.
  */
-function renderPoolProportions({ poolBalances = [], width = 700, height = 36 }) {
-  const activePools = poolBalances.filter((p) => !p.isArchived && p.balance > 0);
+function renderPoolProportions(options = {}) {
+  let pools = [];
+  if (Array.isArray(options)) {
+    pools = options;
+  } else if (Array.isArray(options.poolBalances)) {
+    pools = options.poolBalances;
+  }
+
+  const activePools = pools.filter((p) => !p.isArchived && p.balance > 0);
   const total = activePools.reduce((sum, p) => sum + p.balance, 0);
 
   if (!total) {
-    return `<div class="sub" style="padding:10px;text-align:center;">No positive pool balances recorded.</div>`;
+    return `<div style="padding:24px;text-align:center;color:var(--mut);font-family:var(--font-mono);">No positive physical pool balances recorded.</div>`;
   }
 
   const colors = ['#74c7ec', '#a6e3a1', '#cba6f7', '#fab387', '#f9e2af'];
-  let currentX = 0;
 
   return `
-    <svg viewBox="0 0 ${width} ${height}" style="width:100%;height:auto;display:block;background:#050608;border:1px solid #313244;">
-      ${activePools.map((p, idx) => {
-        const segW = (p.balance / total) * width;
-        const x = currentX;
-        currentX += segW;
-        const color = colors[idx % colors.length];
+    <div class="pool-dist-card">
+      <!-- Proportional Segmented Color Strip -->
+      <div class="pool-strip-bar">
+        ${activePools.map((p, idx) => {
+          const pct = ((p.balance / total) * 100).toFixed(1);
+          const color = colors[idx % colors.length];
+          return `
+            <div class="pool-strip-seg" style="width:${pct}%;background:${color};" title="${p.name}: ${pct}%"></div>
+          `;
+        }).join('')}
+      </div>
 
-        return `
-          <rect x="${x}" y="0" width="${segW}" height="${height}" fill="${color}" stroke="#000" stroke-width="1"/>
-          ${segW > 50 ? `
-            <text x="${x + segW / 2}" y="${height / 2 + 4}" fill="#000" font-size="10" font-weight="700" font-family="monospace" text-anchor="middle">
-              ${p.name.slice(0, 10)} (${Math.round((p.balance / total) * 100)}%)
-            </text>
-          ` : ''}
-        `;
-      }).join('')}
-    </svg>
-    <div style="display:flex;flex-wrap:wrap;gap:10px;margin-top:6px;font-family:monospace;font-size:11px;">
-      ${activePools.map((p, idx) => `
-        <span style="color:${colors[idx % colors.length]};">■ ${p.name}: ${formatINR(p.balance)}</span>
-      `).join('')}
+      <!-- Asset Breakdown Chips -->
+      <div class="pool-asset-grid">
+        ${activePools.map((p, idx) => {
+          const pct = Math.round((p.balance / total) * 100);
+          const color = colors[idx % colors.length];
+          return `
+            <div class="pool-asset-chip">
+              <div style="display:flex;align-items:center;gap:6px;">
+                <span class="color-dot" style="background:${color};"></span>
+                <strong>${p.name}</strong>
+                <span class="badge gray" style="font-size:9px;">${p.type || 'bank'}</span>
+              </div>
+              <div class="mono" style="text-align:right;">
+                <div style="font-weight:700;">${formatINR(p.balance)}</div>
+                <div style="font-size:10px;color:var(--mut);">${pct}%</div>
+              </div>
+            </div>
+          `;
+        }).join('')}
+      </div>
     </div>
   `;
 }
@@ -3376,45 +3919,12 @@ function initApp(rootElement) {
         </div>
       </section>
 
-      <!-- Arbitrary Future Date Horizon Forecaster -->
-      <section class="forecast-box">
-        <div class="card-title" style="color:var(--sapphire);">
-          <span>Future Date Horizon Forecaster</span>
-          <span class="badge blue">${projection.daysToTarget} days out</span>
-        </div>
-        <p style="font-size:12px;color:var(--mut);margin:0 0 8px;">
-          Inspect exact finances at date: <strong>${shortDate(state.horizonDate)}</strong> (${state.horizonDate})
-        </p>
-
-        <!-- Quick Date Pickers -->
-        <div class="horizon-toggle-bar">
-          <button class="horizon-btn" data-set-days="7">+7 Days</button>
-          <button class="horizon-btn" data-set-days="14">+14 Days</button>
-          <button class="horizon-btn" data-set-cycle="1">End of Cycle</button>
-          <button class="horizon-btn" data-set-days="30">+30 Days</button>
-          <button class="horizon-btn" data-set-days="60">+60 Days</button>
-          <div style="flex:1;min-width:140px;display:flex;align-items:center;gap:4px;">
-            <input type="date" id="horizon-date-picker" value="${state.horizonDate}" style="padding:4px 6px;font-size:11px;">
-          </div>
-        </div>
-
-        <!-- Cap vs Pace Side-by-Side -->
-        <div class="grid-2" style="margin-bottom:12px;">
-          <div class="card" style="margin:0;border-color:var(--sapphire);background:#090a0f;">
-            <div class="kpi-lbl" style="color:var(--acc);">Pace (Expected Velocity)</div>
-            <div class="kpi-val good">${formatINR(projection.paceProjected)}</div>
-            <div class="kpi-sub">Incorporates scheduled income (+${formatINR(projection.paceIncomeInflow)}) & burn velocity</div>
-          </div>
-          <div class="card" style="margin:0;border-color:var(--bad);background:#090a0f;">
-            <div class="kpi-lbl" style="color:var(--bad);">Cap (Worst-Case Floor)</div>
-            <div class="kpi-val ${isCapNeg ? 'bad' : ''}">${formatINR(projection.capProjected)}</div>
-            <div class="kpi-sub">Assumes all budgets fully spent & 0 uncollected income</div>
-          </div>
-        </div>
-
-        <!-- Cash Trajectory SVG Chart -->
-        ${renderTrajectoryChart(projection)}
-      </section>
+      <!-- Modern Stock-Grade Cash Trajectory Card (Robinhood / Revolut Style) -->
+      ${renderTrajectoryChart({
+        ...projection,
+        currentTotal: core.totalAvailable,
+        horizonDate: state.horizonDate
+      })}
 
       <!-- Active Rolling Daily Allowance -->
       ${budgets.filter((b) => b.kind === 'daily').map((b) => {
@@ -3763,21 +4273,24 @@ function initApp(rootElement) {
       <h2 style="font-size:16px;font-family:var(--font-mono);margin:0 0 14px;">VISUAL ANALYTICS & PROJECTIONS</h2>
       
       <!-- Trajectory Chart -->
-      <section class="forecast-box" style="margin-bottom:16px;">
-        <div class="card-title" style="color:var(--sapphire);">Cash Flow Trajectory</div>
-        ${renderTrajectoryChart(projection)}
+      <section style="margin-bottom:20px;">
+        ${renderTrajectoryChart({
+          ...projection,
+          currentTotal: core.totalAvailable,
+          horizonDate: state.horizonDate
+        })}
       </section>
 
       <!-- Spend vs Funded Bar Chart -->
-      <section class="card" style="margin-bottom:16px;">
-        <div class="card-title">Spend vs. Funded Envelopes</div>
-        ${renderSpendBarChart(budgets, transactions)}
+      <section class="card" style="margin-bottom:20px;">
+        <div class="card-title" style="color:var(--acc);">Spend vs. Funded Envelopes</div>
+        ${renderSpendBarChart({ budgetDetails: core.budgetDetails, budgets, transactions })}
       </section>
 
       <!-- Physical Pool Allocation Proportion -->
       <section class="card">
-        <div class="card-title">Physical Pool Distribution</div>
-        ${renderPoolProportions(core.poolBalances)}
+        <div class="card-title" style="color:var(--sapphire);">Physical Asset Allocation</div>
+        ${renderPoolProportions({ poolBalances: core.poolBalances })}
       </section>
     `;
   }

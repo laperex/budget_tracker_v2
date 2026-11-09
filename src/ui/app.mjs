@@ -219,45 +219,12 @@ export function initApp(rootElement) {
         </div>
       </section>
 
-      <!-- Arbitrary Future Date Horizon Forecaster -->
-      <section class="forecast-box">
-        <div class="card-title" style="color:var(--sapphire);">
-          <span>Future Date Horizon Forecaster</span>
-          <span class="badge blue">${projection.daysToTarget} days out</span>
-        </div>
-        <p style="font-size:12px;color:var(--mut);margin:0 0 8px;">
-          Inspect exact finances at date: <strong>${shortDate(state.horizonDate)}</strong> (${state.horizonDate})
-        </p>
-
-        <!-- Quick Date Pickers -->
-        <div class="horizon-toggle-bar">
-          <button class="horizon-btn" data-set-days="7">+7 Days</button>
-          <button class="horizon-btn" data-set-days="14">+14 Days</button>
-          <button class="horizon-btn" data-set-cycle="1">End of Cycle</button>
-          <button class="horizon-btn" data-set-days="30">+30 Days</button>
-          <button class="horizon-btn" data-set-days="60">+60 Days</button>
-          <div style="flex:1;min-width:140px;display:flex;align-items:center;gap:4px;">
-            <input type="date" id="horizon-date-picker" value="${state.horizonDate}" style="padding:4px 6px;font-size:11px;">
-          </div>
-        </div>
-
-        <!-- Cap vs Pace Side-by-Side -->
-        <div class="grid-2" style="margin-bottom:12px;">
-          <div class="card" style="margin:0;border-color:var(--sapphire);background:#090a0f;">
-            <div class="kpi-lbl" style="color:var(--acc);">Pace (Expected Velocity)</div>
-            <div class="kpi-val good">${formatINR(projection.paceProjected)}</div>
-            <div class="kpi-sub">Incorporates scheduled income (+${formatINR(projection.paceIncomeInflow)}) & burn velocity</div>
-          </div>
-          <div class="card" style="margin:0;border-color:var(--bad);background:#090a0f;">
-            <div class="kpi-lbl" style="color:var(--bad);">Cap (Worst-Case Floor)</div>
-            <div class="kpi-val ${isCapNeg ? 'bad' : ''}">${formatINR(projection.capProjected)}</div>
-            <div class="kpi-sub">Assumes all budgets fully spent & 0 uncollected income</div>
-          </div>
-        </div>
-
-        <!-- Cash Trajectory SVG Chart -->
-        ${renderTrajectoryChart(projection)}
-      </section>
+      <!-- Modern Stock-Grade Cash Trajectory Card (Robinhood / Revolut Style) -->
+      ${renderTrajectoryChart({
+        ...projection,
+        currentTotal: core.totalAvailable,
+        horizonDate: state.horizonDate
+      })}
 
       <!-- Active Rolling Daily Allowance -->
       ${budgets.filter((b) => b.kind === 'daily').map((b) => {
@@ -606,21 +573,24 @@ export function initApp(rootElement) {
       <h2 style="font-size:16px;font-family:var(--font-mono);margin:0 0 14px;">VISUAL ANALYTICS & PROJECTIONS</h2>
       
       <!-- Trajectory Chart -->
-      <section class="forecast-box" style="margin-bottom:16px;">
-        <div class="card-title" style="color:var(--sapphire);">Cash Flow Trajectory</div>
-        ${renderTrajectoryChart(projection)}
+      <section style="margin-bottom:20px;">
+        ${renderTrajectoryChart({
+          ...projection,
+          currentTotal: core.totalAvailable,
+          horizonDate: state.horizonDate
+        })}
       </section>
 
       <!-- Spend vs Funded Bar Chart -->
-      <section class="card" style="margin-bottom:16px;">
-        <div class="card-title">Spend vs. Funded Envelopes</div>
-        ${renderSpendBarChart(budgets, transactions)}
+      <section class="card" style="margin-bottom:20px;">
+        <div class="card-title" style="color:var(--acc);">Spend vs. Funded Envelopes</div>
+        ${renderSpendBarChart({ budgetDetails: core.budgetDetails, budgets, transactions })}
       </section>
 
       <!-- Physical Pool Allocation Proportion -->
       <section class="card">
-        <div class="card-title">Physical Pool Distribution</div>
-        ${renderPoolProportions(core.poolBalances)}
+        <div class="card-title" style="color:var(--sapphire);">Physical Asset Allocation</div>
+        ${renderPoolProportions({ poolBalances: core.poolBalances })}
       </section>
     `;
   }

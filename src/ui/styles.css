@@ -666,3 +666,299 @@ tr.active-row td {
   gap: 4px;
 }
 
+/* ==========================================================================
+   MODERN FINTECH STOCK CHART & ANALYTICS STYLES (ROBINHOOD / REVOLUT STYLE)
+   ========================================================================== */
+
+.stock-chart-card {
+  background: #000000;
+  border: 1px solid var(--line-high);
+  padding: 16px;
+  margin-bottom: 20px;
+  position: relative;
+  user-select: none;
+}
+
+.stock-chart-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  flex-wrap: wrap;
+  gap: 12px;
+  margin-bottom: 12px;
+}
+
+.stock-ticker-row {
+  display: flex;
+  align-items: baseline;
+  gap: 10px;
+  flex-wrap: wrap;
+}
+
+.stock-ticker-val {
+  font-size: 26px;
+  font-weight: 900;
+  color: var(--fg);
+  letter-spacing: -0.02em;
+}
+
+@media (min-width: 600px) {
+  .stock-ticker-val {
+    font-size: 32px;
+  }
+}
+
+.stock-delta-pill {
+  font-family: var(--font-mono);
+  font-size: 11px;
+  font-weight: 700;
+  padding: 3px 8px;
+  border-radius: 0;
+  display: inline-flex;
+  align-items: center;
+}
+.stock-delta-pill.good {
+  background: rgba(166, 227, 161, 0.15);
+  color: var(--acc);
+  border: 1px solid var(--acc);
+}
+.stock-delta-pill.bad {
+  background: rgba(243, 139, 168, 0.15);
+  color: var(--bad);
+  border: 1px solid var(--bad);
+}
+
+.stock-ticker-sub {
+  font-size: 11px;
+  color: var(--mut);
+  font-family: var(--font-mono);
+  margin-top: 3px;
+  display: flex;
+  gap: 8px;
+}
+.stock-mode-lbl {
+  color: var(--sapphire);
+  font-weight: 600;
+}
+
+.stock-cap-stat {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-end;
+  font-family: var(--font-mono);
+  font-size: 11px;
+}
+
+.stock-event-banner {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+  padding: 6px 10px;
+  background: #11111b;
+  border: 1px solid var(--line);
+  margin-bottom: 10px;
+}
+.event-chip {
+  font-family: var(--font-mono);
+  font-size: 10px;
+  font-weight: 700;
+  padding: 2px 6px;
+}
+.chip-in {
+  background: rgba(166, 227, 161, 0.18);
+  color: var(--acc);
+  border: 1px solid var(--acc);
+}
+.chip-out {
+  background: rgba(243, 139, 168, 0.18);
+  color: var(--bad);
+  border: 1px solid var(--bad);
+}
+
+/* Timeframe Segmented Control */
+.stock-timeframe-bar {
+  display: flex;
+  gap: 4px;
+  align-items: center;
+  border-top: 1px solid var(--line);
+  border-bottom: 1px solid var(--line);
+  padding: 6px 0;
+  margin-bottom: 12px;
+  overflow-x: auto;
+  -webkit-overflow-scrolling: touch;
+}
+.stock-pill {
+  background: transparent;
+  color: var(--mut);
+  border: 1px solid transparent;
+  font-family: var(--font-mono);
+  font-size: 11px;
+  font-weight: 700;
+  padding: 4px 10px;
+  cursor: pointer;
+  letter-spacing: 0.04em;
+  white-space: nowrap;
+}
+.stock-pill:hover {
+  color: var(--fg);
+  background: var(--card);
+}
+.stock-pill.active {
+  background: var(--card-alt);
+  color: var(--acc);
+  border-color: var(--acc);
+}
+
+.stock-custom-date {
+  margin-left: auto;
+  display: flex;
+  align-items: center;
+  gap: 4px;
+}
+.stock-custom-date input[type="date"] {
+  background: #000000;
+  border: 1px solid var(--line);
+  color: var(--fg);
+  font-size: 10px;
+  padding: 3px 5px;
+  font-family: var(--font-mono);
+}
+
+/* Responsive SVG Canvas Wrap */
+.stock-canvas-wrap {
+  position: relative;
+  width: 100%;
+  height: 240px;
+  touch-action: none; /* Crucial for smooth touch scrubbing on mobile */
+  cursor: crosshair;
+}
+
+@media (min-width: 600px) {
+  .stock-canvas-wrap {
+    height: 280px;
+  }
+}
+
+.stock-svg {
+  width: 100%;
+  height: 100%;
+  display: block;
+}
+
+/* Summary Metrics Strip */
+.stock-metrics-strip {
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  gap: 8px;
+  border-top: 1px solid var(--line);
+  padding-top: 12px;
+  margin-top: 12px;
+}
+
+@media (min-width: 600px) {
+  .stock-metrics-strip {
+    grid-template-columns: repeat(4, 1fr);
+  }
+}
+
+.stock-metric-item {
+  display: flex;
+  flex-direction: column;
+}
+.stock-metric-item .lbl {
+  font-size: 10px;
+  color: var(--mut);
+  text-transform: uppercase;
+  font-family: var(--font-mono);
+}
+.stock-metric-item .val {
+  font-size: 13px;
+  font-weight: 700;
+}
+
+/* Spend vs Funded Progress Cards */
+.spend-bars-grid {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+.spend-card {
+  background: var(--card);
+  border: 1px solid var(--line);
+  padding: 10px 14px;
+}
+.spend-card.overspent {
+  border-color: var(--bad);
+}
+.spend-card-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 8px;
+}
+.meter-track {
+  width: 100%;
+  height: 8px;
+  background: #1e1e2e;
+  overflow: hidden;
+  margin-bottom: 6px;
+}
+.meter-fill {
+  height: 100%;
+  transition: width 0.3s ease;
+}
+.meter-good {
+  background: var(--acc);
+}
+.meter-warn {
+  background: var(--peach);
+}
+.meter-bad {
+  background: var(--bad);
+}
+.spend-card-footer {
+  display: flex;
+  justify-content: space-between;
+  font-size: 11px;
+  color: var(--mut);
+}
+
+/* Physical Pool Asset Breakdown */
+.pool-dist-card {
+  background: var(--card);
+  border: 1px solid var(--line);
+  padding: 14px;
+}
+.pool-strip-bar {
+  display: flex;
+  height: 12px;
+  width: 100%;
+  background: #181825;
+  margin-bottom: 12px;
+  overflow: hidden;
+}
+.pool-strip-seg {
+  height: 100%;
+}
+.pool-asset-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+  gap: 10px;
+}
+.pool-asset-chip {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  background: #090a0f;
+  border: 1px solid var(--line);
+  padding: 8px 10px;
+  font-family: var(--font-mono);
+  font-size: 12px;
+}
+.color-dot {
+  width: 8px;
+  height: 8px;
+  display: inline-block;
+}
+
+
