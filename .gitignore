@@ -1,0 +1,41 @@
+# Dependencies
+node_modules/
+
+# Logs
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+pnpm-debug.log*
+lerna-debug.log*
+
+# Runtime data & local exports
+budget-backup-*.json
+verify_ledger.py
+
+# Python cache & temp
+__pycache__/
+*.py[cod]
+*$py.class
+.pytest_cache/
+
+# OS metadata
+.DS_Store
+Thumbs.db
+desktop.ini
+
+# Editor & IDE directories
+.vscode/
+.idea/
+*.swp
+*.swo
+*~
+
+# Build / temporary output directories
+.cache/
+dist-electron/
+out/
+
+# Environment files
+.env
+.env.local
+.env.*.local

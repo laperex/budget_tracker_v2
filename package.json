@@ -1,0 +1,15 @@
+{
+  "name": "budget-tracker-v2",
+  "version": "2.0.0",
+  "description": "Budget Tracker v2 — Single-file personal finance tracker with rolling daily allowance, multi-pool ledger, envelopes, unified obligations, future date horizon projections, AMOLED blocky UI, and independent Python audit script verification.",
+  "type": "module",
+  "scripts": {
+    "test": "node --test tests/**/*.test.mjs",
+    "build": "node scripts/build.mjs",
+    "desktop": "electron --no-sandbox electron-main.cjs",
+    "start": "electron --no-sandbox electron-main.cjs"
+  },
+  "keywords": ["budget", "tracker", "finance", "amoled", "catppuccin"],
+  "author": "",
+  "license": "MIT"
+}
