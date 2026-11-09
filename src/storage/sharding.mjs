@@ -4,6 +4,75 @@ import { createInitialConfig } from '../domain/types.mjs';
 export const CONFIG_STORAGE_KEY = 'budget-tracker-v2-config';
 export const LEDGER_PREFIX = 'budget-tracker-v2-ledger-';
 export const MANIFEST_STORAGE_KEY = 'budget-tracker-v2-months-manifest';
+export const RECORDS_STORAGE_KEY = 'budget-tracker-v3-records';
+export const UI_PREFS_KEY = 'budget-tracker-v3-ui';
+
+/**
+ * Loads the flat records array from localStorage
+ */
+export function loadRecordsFromLocalStorage() {
+  try {
+    const raw = typeof localStorage !== 'undefined' ? localStorage.getItem(RECORDS_STORAGE_KEY) : null;
+    if (raw) {
+      const parsed = JSON.parse(raw);
+      if (Array.isArray(parsed)) return parsed;
+    }
+  } catch (err) {
+    console.error('Failed to load records from localStorage:', err);
+  }
+  return null;
+}
+
+/**
+ * Saves the flat records array to localStorage
+ */
+export function saveRecordsToLocalStorage(records = []) {
+  try {
+    if (typeof localStorage !== 'undefined') {
+      localStorage.setItem(RECORDS_STORAGE_KEY, JSON.stringify(records));
+    }
+  } catch (err) {
+    console.error('Failed to save records to localStorage:', err);
+  }
+}
+
+/**
+ * Loads ephemeral UI preferences (active tab, active budget, etc.)
+ */
+export function loadUIPrefsFromLocalStorage() {
+  try {
+    const raw = typeof localStorage !== 'undefined' ? localStorage.getItem(UI_PREFS_KEY) : null;
+    if (raw) return JSON.parse(raw);
+  } catch (err) {}
+  return { activeTab: 'overview', activeBudgetId: null, horizonDate: null };
+}
+
+/**
+ * Saves ephemeral UI preferences
+ */
+export function saveUIPrefsToLocalStorage(prefs = {}) {
+  try {
+    if (typeof localStorage !== 'undefined') {
+      localStorage.setItem(UI_PREFS_KEY, JSON.stringify(prefs));
+    }
+  } catch (err) {}
+}
+
+/**
+ * Completely clears all storage data
+ */
+export function clearAllLocalStorageData() {
+  try {
+    if (typeof localStorage !== 'undefined') {
+      localStorage.removeItem(RECORDS_STORAGE_KEY);
+      localStorage.removeItem(UI_PREFS_KEY);
+      localStorage.removeItem(CONFIG_STORAGE_KEY);
+      localStorage.removeItem(MANIFEST_STORAGE_KEY);
+    }
+  } catch (err) {
+    console.error('Failed to clear storage:', err);
+  }
+}
 
 /**
  * Partitions a flat array of ledger entries into a map of YYYY-MM -> entries[]

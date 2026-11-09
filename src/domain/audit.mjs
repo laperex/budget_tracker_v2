@@ -2,11 +2,36 @@ import { calculatePoolBalances } from './ledger.mjs';
 import { calculateCoreNumbers } from './totals.mjs';
 import { projectAtDate } from './projection.mjs';
 import { todayISO, getCycleEnd } from './dateUtils.mjs';
+import { deriveState } from './derive.mjs';
+
+function normalizeAuditInput(stateOrRecords, ledgerEntries = []) {
+  if (Array.isArray(stateOrRecords)) {
+    // If it's an array of records
+    const derived = deriveState(stateOrRecords);
+    return {
+      state: {
+        pools: derived.pools,
+        budgets: derived.budgets,
+        obligations: derived.obligations,
+        expectedIncomes: derived.expectedIncomes,
+        cycleStartDay: derived.config.cycleStartDay
+      },
+      ledgerEntries: derived.transactions
+    };
+  }
+  return {
+    state: stateOrRecords || {},
+    ledgerEntries: Array.isArray(ledgerEntries) ? ledgerEntries : []
+  };
+}
 
 /**
  * Runs runtime invariant assertions against the current state.
  */
-export function runInvariantsCheck(state, ledgerEntries = []) {
+export function runInvariantsCheck(stateOrRecords, ledgerEntries = []) {
+  const norm = normalizeAuditInput(stateOrRecords, ledgerEntries);
+  const state = norm.state;
+  const ledger = norm.ledgerEntries;
   const checks = [];
   const pools = state.pools || [];
   const budgets = state.budgets || [];
@@ -15,7 +40,7 @@ export function runInvariantsCheck(state, ledgerEntries = []) {
 
   // Check 1: Transfer Conservation
   let transferLeaks = 0;
-  for (const e of ledgerEntries) {
+  for (const e of ledger) {
     if (e.type === 'transfer') {
       if (!e.poolId || !e.toPoolId || e.poolId === e.toPoolId || !(Number(e.amount) > 0)) {
         transferLeaks++;
@@ -90,7 +115,10 @@ export function runInvariantsCheck(state, ledgerEntries = []) {
  * embedding the active dataset and independent calculation engine to mathematically
  * audit all results from the command line.
  */
-export function generatePythonAuditScript(state, ledgerEntries = [], targetDate = null) {
+export function generatePythonAuditScript(stateOrRecords, ledgerEntries = [], targetDate = null) {
+  const norm = normalizeAuditInput(stateOrRecords, ledgerEntries);
+  const state = norm.state;
+  const ledger = norm.ledgerEntries;
   const asOf = todayISO();
   const horizon = targetDate || getCycleEnd(asOf, state.cycleStartDay || 1);
 
@@ -99,7 +127,7 @@ export function generatePythonAuditScript(state, ledgerEntries = [], targetDate 
     pools: state.pools || [],
     budgets: state.budgets || [],
     obligations: state.obligations || [],
-    ledgerEntries,
+    ledgerEntries: ledger,
     horizonDate: horizon,
     asOfDate: asOf
   });
@@ -110,7 +138,7 @@ export function generatePythonAuditScript(state, ledgerEntries = [], targetDate 
     pools: state.pools || [],
     budgets: state.budgets || [],
     obligations: state.obligations || [],
-    ledgerEntries,
+    ledgerEntries: ledger,
     expectedIncomes: state.expectedIncomes || []
   });
 
@@ -121,7 +149,7 @@ export function generatePythonAuditScript(state, ledgerEntries = [], targetDate 
     budgets: state.budgets || [],
     obligations: state.obligations || [],
     expectedIncomes: state.expectedIncomes || [],
-    ledger: ledgerEntries,
+    ledger,
     jsExpected: {
       totalAvailable: jsCore.totalAvailable,
       committed: jsCore.committed,
@@ -194,10 +222,10 @@ def audit():
         etype = e.get('type')
         pid = e.get('poolId')
         
-        if etype in ('income', 'loan_in'):
+        if etype in ('income', 'loan_in', 'loan-in'):
             if pid in pools_map:
                 pools_map[pid]['balance'] += amt
-        elif etype in ('expense', 'loan_out'):
+        elif etype in ('expense', 'loan_out', 'loan-out'):
             if pid in pools_map:
                 pools_map[pid]['balance'] -= amt
         elif etype == 'transfer':

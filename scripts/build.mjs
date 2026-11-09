@@ -9,6 +9,7 @@ const rootDir = path.resolve(__dirname, '..');
 
 const filesInOrder = [
   'src/domain/dateUtils.mjs',
+  'src/domain/records.mjs',
   'src/domain/types.mjs',
   'src/domain/recurrence.mjs',
   'src/domain/ledger.mjs',
@@ -16,6 +17,7 @@ const filesInOrder = [
   'src/domain/obligations.mjs',
   'src/domain/totals.mjs',
   'src/domain/projection.mjs',
+  'src/domain/derive.mjs',
   'src/domain/audit.mjs',
   'src/storage/sharding.mjs',
   'src/storage/migration.mjs',

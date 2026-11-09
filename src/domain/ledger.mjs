@@ -37,13 +37,15 @@ export function calculatePoolBalances(pools, ledgerEntries = []) {
 
     switch (entry.type) {
       case 'income':
-      case 'loan_in': {
+      case 'loan_in':
+      case 'loan-in': {
         if (pool) pool.balance += amt;
         break;
       }
 
       case 'expense':
-      case 'loan_out': {
+      case 'loan_out':
+      case 'loan-out': {
         if (pool) pool.balance -= amt;
         break;
       }

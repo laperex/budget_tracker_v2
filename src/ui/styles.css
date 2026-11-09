@@ -511,3 +511,158 @@ tr.active-row td {
   letter-spacing: 0.06em;
   margin: 0;
 }
+
+/* Danger Buttons */
+.btn-danger {
+  background: transparent;
+  color: var(--bad);
+  border: 1px solid var(--bad);
+  font-family: var(--font-mono);
+  font-size: 11px;
+  padding: 6px 10px;
+  cursor: pointer;
+  letter-spacing: 0.04em;
+  font-weight: 700;
+}
+.btn-danger:hover {
+  background: var(--bad);
+  color: #000000;
+}
+.btn-danger-armed {
+  background: var(--bad) !important;
+  color: #000000 !important;
+  animation: pulse-danger 0.8s infinite alternate;
+}
+@keyframes pulse-danger {
+  0% { opacity: 0.85; }
+  100% { opacity: 1; }
+}
+
+/* Action Icons */
+.action-btn-group {
+  display: inline-flex;
+  gap: 4px;
+}
+.btn-icon {
+  background: transparent;
+  color: var(--mut);
+  border: 1px solid var(--line);
+  padding: 3px 6px;
+  font-size: 11px;
+  cursor: pointer;
+  line-height: 1;
+}
+.btn-icon:hover {
+  background: var(--line-high);
+  color: var(--fg);
+}
+.btn-icon.btn-delete:hover {
+  background: var(--bad);
+  border-color: var(--bad);
+  color: #000000;
+}
+
+/* Log & Record Timeline Styles */
+.log-toolbar {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 14px;
+  background: var(--card);
+  padding: 10px 12px;
+  border: 1px solid var(--line);
+}
+.log-search-input {
+  flex: 1;
+  min-width: 140px;
+  background: #000000;
+  border: 1px solid var(--line-high);
+  color: var(--fg);
+  padding: 6px 8px;
+  font-family: var(--font-mono);
+  font-size: 12px;
+}
+.log-filter-select {
+  background: #000000;
+  border: 1px solid var(--line-high);
+  color: var(--fg);
+  padding: 6px 8px;
+  font-family: var(--font-mono);
+  font-size: 12px;
+}
+.record-list {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+.record-card {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 10px;
+  background: var(--card);
+  border: 1px solid var(--line);
+  padding: 8px 12px;
+  font-family: var(--font-mono);
+  font-size: 12px;
+}
+.record-card:hover {
+  border-color: var(--line-strong);
+  background: var(--card-alt);
+}
+.record-card.type-expense, .record-card.type-loan-out {
+  border-left: 3px solid var(--bad);
+}
+.record-card.type-income, .record-card.type-loan-in {
+  border-left: 3px solid var(--acc);
+}
+.record-card.type-transfer, .record-card.type-adjustment, .record-card.type-allocation {
+  border-left: 3px solid var(--yellow);
+}
+.record-card.type-pool, .record-card.type-budget, .record-card.type-obligation, .record-card.type-expected-income {
+  border-left: 3px solid var(--sapphire);
+}
+.record-card.type-config {
+  border-left: 3px solid var(--mut);
+}
+.record-meta {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  min-width: 150px;
+}
+.record-date {
+  color: var(--mut);
+  font-size: 11px;
+}
+.record-type-pill {
+  font-size: 10px;
+  padding: 1px 5px;
+  text-transform: uppercase;
+  font-weight: 700;
+  border: 1px solid var(--line-high);
+  background: #000000;
+}
+.record-body {
+  flex: 1;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+.record-main {
+  font-weight: 600;
+}
+.record-sub {
+  color: var(--mut);
+  font-size: 11px;
+}
+.record-actions {
+  display: flex;
+  gap: 4px;
+}
+
