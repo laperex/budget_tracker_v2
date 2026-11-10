@@ -599,9 +599,10 @@ export function initApp(rootElement) {
         <div style="display:flex;gap:10px;flex-wrap:wrap;align-items:center;">
           <button class="sec sm" id="btn-backup-export">Export Full Backup (JSON)</button>
           <label class="btn sec sm" style="cursor:pointer;margin:0;">
-            Restore from Backup (JSON)
-            <input type="file" id="input-backup-restore" accept=".json" style="display:none;">
+            Restore from File
+            <input type="file" id="input-backup-restore" accept=".json,application/json,text/plain,*/*" style="display:none;">
           </label>
+          <button class="sec sm" data-action="open-modal" data-modal="paste-restore">Paste JSON Backup</button>
           <button class="btn-danger sm ${state.armedClearAll ? 'btn-danger-armed' : ''}" id="btn-clear-all">
             ${state.armedClearAll ? 'CONFIRM CLEAR ALL DATA (CLICK AGAIN)' : 'Clear All Data (Factory Reset)'}
           </button>
@@ -973,6 +974,24 @@ export function initApp(rootElement) {
         <div style="margin-top:14px;text-align:right;">
           <button class="sec sm" data-action="close-modal">Close</button>
         </div>
+      `;
+    } else if (modalName === 'paste-restore') {
+      content = `
+        <div class="modal-header">
+          <h3 class="modal-title">Restore from JSON Text</h3>
+          <button class="sm ghost" data-action="close-modal">&times;</button>
+        </div>
+        <p style="font-size:12px;color:var(--mut);margin:0 0 12px;">
+          Paste your backup JSON content (supports v3 flat records, v2 config/ledger, v1, or raw arrays).
+        </p>
+        <form id="modal-form-paste-restore">
+          <textarea id="mpr-json" rows="10" class="mono" placeholder="Paste full backup JSON here..." style="width:100%;font-size:11px;background:#000;color:var(--fg);border:1px solid var(--line);margin-bottom:12px;" required></textarea>
+          <div id="mpr-err" style="color:var(--bad);font-family:var(--font-mono);font-size:12px;margin-bottom:8px;"></div>
+          <div style="display:flex;gap:8px;">
+            <button class="pri sm" type="submit" style="flex:1;">Restore Database</button>
+            <button class="sec sm" type="button" data-action="close-modal">Cancel</button>
+          </div>
+        </form>
       `;
     } else if (modalName === 'edit-record') {
       const rec = state.records.find((r) => r.id === state.editingRecordId);
@@ -1716,9 +1735,13 @@ export function initApp(rootElement) {
     const inputRestore = rootElement.querySelector('#input-backup-restore');
     if (inputRestore) {
       inputRestore.addEventListener('change', (e) => {
-        const file = e.target.files[0];
+        const file = e.target.files && e.target.files[0];
         if (!file) return;
         const reader = new FileReader();
+        reader.onerror = () => {
+          alert('Failed to read file: ' + (reader.error?.message || 'File access error'));
+          inputRestore.value = '';
+        };
         reader.onload = (evt) => {
           try {
             const restored = validateAndParseBackup(evt.target.result);
@@ -1727,12 +1750,40 @@ export function initApp(rootElement) {
               save();
               render();
               alert(`Successfully restored ${restored.records.length} records!`);
+            } else {
+              alert('Restore failed: No records recovered.');
             }
           } catch (err) {
             alert('Restore failed: ' + err.message);
+          } finally {
+            inputRestore.value = '';
           }
         };
         reader.readAsText(file);
+      });
+    }
+
+    // Modal Form: Paste Backup JSON Text
+    const mPasteForm = rootElement.querySelector('#modal-form-paste-restore');
+    if (mPasteForm) {
+      mPasteForm.addEventListener('submit', (e) => {
+        e.preventDefault();
+        const jsonText = rootElement.querySelector('#mpr-json')?.value || '';
+        const errEl = rootElement.querySelector('#mpr-err');
+        try {
+          const restored = validateAndParseBackup(jsonText);
+          if (restored && Array.isArray(restored.records)) {
+            state.records = restored.records;
+            state.activeModal = null;
+            save();
+            render();
+            alert(`Successfully restored ${restored.records.length} records!`);
+          } else {
+            if (errEl) errEl.textContent = 'Restore failed: No records recovered.';
+          }
+        } catch (err) {
+          if (errEl) errEl.textContent = 'Restore failed: ' + err.message;
+        }
       });
     }
 

@@ -3177,27 +3177,44 @@ function migrateV2toV3(v2Config = {}, v2LedgerEntries = []) {
 // --- src/storage/backup.mjs ---
 
 
+
 /**
- * Full state export and restore utilities for Budget Tracker v3 (and legacy v2).
+ * Full state export and restore utilities for Budget Tracker v3 (and legacy v2 / v1).
  */
 
 function exportFullBackupJSON(recordsOrConfig, ledger = null) {
-  if (Array.isArray(recordsOrConfig)) {
-    return JSON.stringify({
-      app: 'Budget Tracker v3',
-      version: 3,
-      exportedAt: new Date().toISOString(),
-      records: recordsOrConfig
-    }, null, 2);
-  }
+  const records = Array.isArray(recordsOrConfig)
+    ? recordsOrConfig
+    : (recordsOrConfig && Array.isArray(recordsOrConfig.records) ? recordsOrConfig.records : null);
 
-  if (recordsOrConfig && Array.isArray(recordsOrConfig.records)) {
-    return JSON.stringify({
+  if (records) {
+    let v2Config = null;
+    let v2Ledger = null;
+    try {
+      const derived = deriveState(records);
+      v2Config = {
+        version: 2,
+        cycleStartDay: derived.config?.cycleStartDay || 1,
+        activeTab: 'overview',
+        activeBudgetId: derived.budgets[0]?.id || null,
+        pools: derived.pools,
+        budgets: derived.budgets,
+        obligations: derived.obligations,
+        expectedIncomes: derived.expectedIncomes
+      };
+      v2Ledger = derived.transactions;
+    } catch (e) {
+      // Graceful fallback if derivation encounters edge case
+    }
+
+    const payload = {
       app: 'Budget Tracker v3',
       version: 3,
       exportedAt: new Date().toISOString(),
-      records: recordsOrConfig.records
-    }, null, 2);
+      records,
+      ...(v2Config ? { config: v2Config, ledger: v2Ledger } : {})
+    };
+    return JSON.stringify(payload, null, 2);
   }
 
   // Legacy v2 signature: exportFullBackupJSON(config, ledger)
@@ -3212,51 +3229,74 @@ function exportFullBackupJSON(recordsOrConfig, ledger = null) {
 }
 
 function validateAndParseBackup(jsonStr) {
-  if (!jsonStr || typeof jsonStr !== 'string') {
+  if (!jsonStr || (typeof jsonStr !== 'string' && typeof jsonStr !== 'object')) {
     throw new Error('Empty or invalid backup payload');
   }
 
-  let parsed;
-  try {
-    parsed = JSON.parse(jsonStr);
-  } catch (err) {
-    throw new Error('Invalid JSON format: ' + err.message);
+  let parsed = jsonStr;
+  if (typeof jsonStr === 'string') {
+    const trimmed = jsonStr.trim();
+    if (!trimmed) {
+      throw new Error('Empty or invalid backup payload');
+    }
+    try {
+      parsed = JSON.parse(trimmed);
+    } catch (err) {
+      throw new Error('Invalid JSON format: ' + err.message);
+    }
   }
 
   if (!parsed || typeof parsed !== 'object') {
-    throw new Error('Backup data is not a valid object');
+    throw new Error('Backup data is not a valid object or array');
   }
 
-  // Version 3: Single records array
-  if (parsed.version === 3) {
-    if (!Array.isArray(parsed.records)) {
-      throw new Error('Invalid v3 backup structure: missing records array');
-    }
+  // 1. Raw array of records: [ { id, type, date, data }, ... ]
+  if (Array.isArray(parsed)) {
+    return {
+      version: 3,
+      records: parsed
+    };
+  }
+
+  // 2. Version 3 or object with records array: { version: 3, records: [...] } or { records: [...] }
+  if (Array.isArray(parsed.records)) {
     return {
       version: 3,
       records: parsed.records
     };
   }
 
-  // Version 2: config + ledger
-  if (parsed.version === 2) {
-    if (!parsed.config || !Array.isArray(parsed.config.pools) || !Array.isArray(parsed.config.budgets)) {
-      throw new Error('Invalid configuration structure in backup');
-    }
-    if (!Array.isArray(parsed.ledger)) {
-      throw new Error('Invalid ledger structure in backup');
-    }
-    const convertedRecords = migrateV2toV3(parsed.config, parsed.ledger);
+  // 3. Version 2 or object with config + ledger: { version: 2, config, ledger } or { config, ledger }
+  if (parsed.config && (Array.isArray(parsed.ledger) || parsed.config.pools || parsed.config.budgets)) {
+    const config = parsed.config;
+    const ledger = Array.isArray(parsed.ledger) ? parsed.ledger : [];
+    const pools = Array.isArray(config.pools) ? config.pools : [];
+    const budgets = Array.isArray(config.budgets) ? config.budgets : [];
+    const safeConfig = { ...config, pools, budgets };
+    const convertedRecords = migrateV2toV3(safeConfig, ledger);
     return {
       version: 2,
-      config: parsed.config,
-      ledger: parsed.ledger,
+      config: safeConfig,
+      ledger,
       records: convertedRecords
     };
   }
 
-  throw new Error('Unsupported backup version: expected v2 or v3');
+  // 4. Legacy V1 format: { budgets: [ { id, name, amount, days, start, expenses: [...] } ] }
+  if (Array.isArray(parsed.budgets)) {
+    const v2Migrated = migrateV1toV2(parsed, typeof jsonStr === 'string' ? jsonStr : JSON.stringify(parsed));
+    const convertedRecords = migrateV2toV3(v2Migrated.config, v2Migrated.ledgerEntries);
+    return {
+      version: 1,
+      config: v2Migrated.config,
+      ledger: v2Migrated.ledgerEntries,
+      records: convertedRecords
+    };
+  }
+
+  throw new Error('Unsupported backup format: payload must contain records array or config + ledger');
 }
+
 
 // --- src/ui/charts.mjs ---
 
@@ -3769,7 +3809,7 @@ function renderSpendBarChart(options = {}) {
   return `
     <div class="spend-bars-grid">
       ${details.map((b) => {
-        const total = b.kind === 'daily' ? (b.state.B || 0) : (b.state.funded || 0);
+        const total = b.kind === 'daily' ? (b.state?.B || b.amount || 0) : (b.state?.funded || b.amount || 0);
         const spent = b.state ? (b.state.spent || 0) : 0;
         const pct = total > 0 ? Math.min(100, Math.round((spent / total) * 100)) : (spent > 0 ? 100 : 0);
         const isOver = spent > total;
@@ -4436,9 +4476,10 @@ function initApp(rootElement) {
         <div style="display:flex;gap:10px;flex-wrap:wrap;align-items:center;">
           <button class="sec sm" id="btn-backup-export">Export Full Backup (JSON)</button>
           <label class="btn sec sm" style="cursor:pointer;margin:0;">
-            Restore from Backup (JSON)
-            <input type="file" id="input-backup-restore" accept=".json" style="display:none;">
+            Restore from File
+            <input type="file" id="input-backup-restore" accept=".json,application/json,text/plain,*/*" style="display:none;">
           </label>
+          <button class="sec sm" data-action="open-modal" data-modal="paste-restore">Paste JSON Backup</button>
           <button class="btn-danger sm ${state.armedClearAll ? 'btn-danger-armed' : ''}" id="btn-clear-all">
             ${state.armedClearAll ? 'CONFIRM CLEAR ALL DATA (CLICK AGAIN)' : 'Clear All Data (Factory Reset)'}
           </button>
@@ -4810,6 +4851,24 @@ function initApp(rootElement) {
         <div style="margin-top:14px;text-align:right;">
           <button class="sec sm" data-action="close-modal">Close</button>
         </div>
+      `;
+    } else if (modalName === 'paste-restore') {
+      content = `
+        <div class="modal-header">
+          <h3 class="modal-title">Restore from JSON Text</h3>
+          <button class="sm ghost" data-action="close-modal">&times;</button>
+        </div>
+        <p style="font-size:12px;color:var(--mut);margin:0 0 12px;">
+          Paste your backup JSON content (supports v3 flat records, v2 config/ledger, v1, or raw arrays).
+        </p>
+        <form id="modal-form-paste-restore">
+          <textarea id="mpr-json" rows="10" class="mono" placeholder="Paste full backup JSON here..." style="width:100%;font-size:11px;background:#000;color:var(--fg);border:1px solid var(--line);margin-bottom:12px;" required></textarea>
+          <div id="mpr-err" style="color:var(--bad);font-family:var(--font-mono);font-size:12px;margin-bottom:8px;"></div>
+          <div style="display:flex;gap:8px;">
+            <button class="pri sm" type="submit" style="flex:1;">Restore Database</button>
+            <button class="sec sm" type="button" data-action="close-modal">Cancel</button>
+          </div>
+        </form>
       `;
     } else if (modalName === 'edit-record') {
       const rec = state.records.find((r) => r.id === state.editingRecordId);
@@ -5553,9 +5612,13 @@ function initApp(rootElement) {
     const inputRestore = rootElement.querySelector('#input-backup-restore');
     if (inputRestore) {
       inputRestore.addEventListener('change', (e) => {
-        const file = e.target.files[0];
+        const file = e.target.files && e.target.files[0];
         if (!file) return;
         const reader = new FileReader();
+        reader.onerror = () => {
+          alert('Failed to read file: ' + (reader.error?.message || 'File access error'));
+          inputRestore.value = '';
+        };
         reader.onload = (evt) => {
           try {
             const restored = validateAndParseBackup(evt.target.result);
@@ -5564,12 +5627,40 @@ function initApp(rootElement) {
               save();
               render();
               alert(`Successfully restored ${restored.records.length} records!`);
+            } else {
+              alert('Restore failed: No records recovered.');
             }
           } catch (err) {
             alert('Restore failed: ' + err.message);
+          } finally {
+            inputRestore.value = '';
           }
         };
         reader.readAsText(file);
+      });
+    }
+
+    // Modal Form: Paste Backup JSON Text
+    const mPasteForm = rootElement.querySelector('#modal-form-paste-restore');
+    if (mPasteForm) {
+      mPasteForm.addEventListener('submit', (e) => {
+        e.preventDefault();
+        const jsonText = rootElement.querySelector('#mpr-json')?.value || '';
+        const errEl = rootElement.querySelector('#mpr-err');
+        try {
+          const restored = validateAndParseBackup(jsonText);
+          if (restored && Array.isArray(restored.records)) {
+            state.records = restored.records;
+            state.activeModal = null;
+            save();
+            render();
+            alert(`Successfully restored ${restored.records.length} records!`);
+          } else {
+            if (errEl) errEl.textContent = 'Restore failed: No records recovered.';
+          }
+        } catch (err) {
+          if (errEl) errEl.textContent = 'Restore failed: ' + err.message;
+        }
       });
     }
 

@@ -508,7 +508,7 @@ export function renderSpendBarChart(options = {}) {
   return `
     <div class="spend-bars-grid">
       ${details.map((b) => {
-        const total = b.kind === 'daily' ? (b.state.B || 0) : (b.state.funded || 0);
+        const total = b.kind === 'daily' ? (b.state?.B || b.amount || 0) : (b.state?.funded || b.amount || 0);
         const spent = b.state ? (b.state.spent || 0) : 0;
         const pct = total > 0 ? Math.min(100, Math.round((spent / total) * 100)) : (spent > 0 ? 100 : 0);
         const isOver = spent > total;
