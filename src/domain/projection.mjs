@@ -64,7 +64,7 @@ export function projectAtDate({
       const weight = isPotential ? ((ob.likelihood || 50) / 100) : 1.0;
       const amt = ob.outstanding;
 
-      if (ob.direction === 'pay') {
+      if (ob.direction === 'pay' || ob.role === 'bill') {
         events.push({
           date: ob.due,
           type: ob.role === 'bill' ? 'bill' : 'debt',
@@ -159,6 +159,8 @@ export function projectAtDate({
   const maxDays = Math.min(daysToTarget, 120); // Cap chart trajectory at 120 days
   let runningPace = core.totalAvailable;
   let runningCap = core.totalAvailable;
+  // Worst-Case Floor: 100% of all envelope and budget allocations considered ALREADY SPENT on Day 0
+  let runningWorstCase = core.totalAvailable - capBudgetOutflow;
 
   const dailyCapBurn = maxDays > 0 ? capBudgetOutflow / maxDays : 0;
   const dailyPaceBurn = maxDays > 0 ? paceBudgetOutflow / maxDays : 0;
@@ -173,6 +175,7 @@ export function projectAtDate({
       } else {
         runningCap -= ev.amount;
         runningPace -= ev.amount * ((ev.likelihood ?? 100) / 100);
+        runningWorstCase -= ev.amount; // Deduct scheduled bills & debts
       }
     }
 
@@ -186,6 +189,7 @@ export function projectAtDate({
       dayIndex: i,
       cap: Math.round(runningCap),
       pace: Math.round(runningPace),
+      worstCase: Math.round(runningWorstCase),
       events: dayEvents
     });
   }
@@ -198,6 +202,7 @@ export function projectAtDate({
     unallocated: core.unallocated,
     capProjected: Math.round(capProjected),
     paceProjected: Math.round(paceProjected),
+    worstCaseProjected: Math.round(capProjected),
     capBudgetOutflow,
     paceBudgetOutflow,
     capBillOutflow,

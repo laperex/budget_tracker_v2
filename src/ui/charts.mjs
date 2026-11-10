@@ -79,8 +79,11 @@ export function renderTrajectoryChart(options = {}) {
   let maxVal = -Infinity;
 
   for (const pt of trajectory) {
+    const w = pt.worstCase ?? pt.cap;
+    if (w < minVal) minVal = w;
     if (pt.cap < minVal) minVal = pt.cap;
     if (pt.pace < minVal) minVal = pt.pace;
+    if (w > maxVal) maxVal = w;
     if (pt.cap > maxVal) maxVal = pt.cap;
     if (pt.pace > maxVal) maxVal = pt.pace;
   }
@@ -99,15 +102,18 @@ export function renderTrajectoryChart(options = {}) {
   // Map trajectory to {x, y} coordinate sets
   const pacePoints = [];
   const capPoints = [];
+  const worstPoints = [];
   const eventPins = [];
 
   trajectory.forEach((pt, idx) => {
     const x = getX(idx);
     const yPace = Math.min(height, Math.max(0, getY(pt.pace)));
     const yCap = Math.min(height, Math.max(0, getY(pt.cap)));
+    const yWorst = Math.min(height, Math.max(0, getY(pt.worstCase ?? pt.cap)));
 
     pacePoints.push({ x, y: yPace, data: pt, index: idx });
     capPoints.push({ x, y: yCap, data: pt, index: idx });
+    worstPoints.push({ x, y: yWorst, data: pt, index: idx });
 
     if (pt.events && pt.events.length) {
       pt.events.forEach((ev) => {
@@ -127,6 +133,7 @@ export function renderTrajectoryChart(options = {}) {
   // Generate smooth cubic curves
   const paceCurve = getSmoothPathData(pacePoints);
   const capCurve = getSmoothPathData(capPoints);
+  const worstCurve = getSmoothPathData(worstPoints);
 
   // Bottom baseline Y for area fill
   const baseY = getY(minVal).toFixed(1);
@@ -135,10 +142,10 @@ export function renderTrajectoryChart(options = {}) {
 
   const paceAreaPath = `${paceCurve} L ${lastX} ${baseY} L ${firstX} ${baseY} Z`;
 
-  // Shaded corridor between Pace and Cap (Confidence Corridor)
-  const capReversed = [...capPoints].reverse();
-  const capReversePath = capReversed.map((p, i) => `${i === 0 ? 'L' : 'L'} ${p.x.toFixed(1)} ${p.y.toFixed(1)}`).join(' ');
-  const corridorPath = `${paceCurve} ${capReversePath} Z`;
+  // Shaded corridor between Pace and Worst-Case Floor (Confidence Corridor)
+  const worstReversed = [...worstPoints].reverse();
+  const worstReversePath = worstReversed.map((p) => `L ${p.x.toFixed(1)} ${p.y.toFixed(1)}`).join(' ');
+  const corridorPath = `${paceCurve} ${worstReversePath} Z`;
 
   // X Axis Date Ticks (5-6 evenly spaced)
   const numDateTicks = Math.min(5, trajectory.length);
@@ -164,13 +171,14 @@ export function renderTrajectoryChart(options = {}) {
   const targetPt = trajectory[trajectory.length - 1];
   const targetPace = targetPt.pace;
   const targetCap = targetPt.cap;
+  const targetWorst = targetPt.worstCase ?? targetPt.cap;
   const delta = targetPace - currentTotal;
   const deltaPct = currentTotal > 0 ? (delta / currentTotal) * 100 : 0;
   const isPositive = delta >= 0;
 
   // Range extremes for summary strip
   const peakVal = Math.max(...trajectory.map((t) => t.pace));
-  const troughVal = Math.min(...trajectory.map((t) => t.cap));
+  const troughVal = Math.min(...trajectory.map((t) => Math.min(t.cap, t.worstCase ?? t.cap)));
   const totalEventsIn = eventPins.filter((e) => e.direction === 'in').reduce((s, e) => s + e.amount, 0);
   const totalEventsOut = eventPins.filter((e) => e.direction === 'out').reduce((s, e) => s + e.amount, 0);
 
@@ -180,6 +188,7 @@ export function renderTrajectoryChart(options = {}) {
     date: t.date,
     pace: t.pace,
     cap: t.cap,
+    worstCase: t.worstCase ?? t.cap,
     events: t.events || []
   }))).replace(/"/g, '&quot;');
 
@@ -201,10 +210,16 @@ export function renderTrajectoryChart(options = {}) {
           </div>
         </div>
 
-        <!-- Cap Floor Comparison Pill -->
-        <div class="stock-cap-stat">
-          <span style="font-size:10px;color:var(--bad);text-transform:uppercase;font-weight:700;">Worst-Case Floor</span>
-          <span class="mono" id="${chartId}-cap" style="font-weight:700;color:var(--bad);">${formatINR(targetCap)}</span>
+        <!-- Cap & Worst-Case Comparison Pills -->
+        <div class="stock-header-stats">
+          <div class="stock-stat-block">
+            <span class="stock-stat-lbl" style="color:var(--bad);">Worst Case (Spent)</span>
+            <span class="mono" id="${chartId}-worst" style="font-weight:700;color:var(--bad);">${formatINR(targetWorst)}</span>
+          </div>
+          <div class="stock-stat-block">
+            <span class="stock-stat-lbl" style="color:var(--sapphire);">Linear Cap</span>
+            <span class="mono" id="${chartId}-cap" style="font-weight:700;color:var(--sapphire);">${formatINR(targetCap)}</span>
+          </div>
         </div>
       </div>
 
@@ -225,6 +240,22 @@ export function renderTrajectoryChart(options = {}) {
         </div>
       </div>
 
+      <!-- Trajectory Legend Strip -->
+      <div class="stock-legend">
+        <div class="stock-legend-item">
+          <span class="legend-line line-green"></span>
+          <span>Expected Pace</span>
+        </div>
+        <div class="stock-legend-item">
+          <span class="legend-line line-blue dashed"></span>
+          <span>Linear Budget Burn</span>
+        </div>
+        <div class="stock-legend-item">
+          <span class="legend-line line-red"></span>
+          <span>Worst Case (Envelopes Spent)</span>
+        </div>
+      </div>
+
       <!-- SVG Graph Canvas -->
       <div class="stock-canvas-wrap">
         <svg viewBox="0 0 ${width} ${height}" class="stock-svg" preserveAspectRatio="none">
@@ -238,7 +269,7 @@ export function renderTrajectoryChart(options = {}) {
 
             <!-- Cap Risk Corridor Gradient -->
             <linearGradient id="${chartId}-corridor" x1="0" y1="0" x2="0" y2="1">
-              <stop offset="0%" stop-color="#74c7ec" stop-opacity="0.12"/>
+              <stop offset="0%" stop-color="#74c7ec" stop-opacity="0.10"/>
               <stop offset="100%" stop-color="#f38ba8" stop-opacity="0.03"/>
             </linearGradient>
           </defs>
@@ -257,14 +288,17 @@ export function renderTrajectoryChart(options = {}) {
             <line x1="${padding.left}" y1="${zeroY}" x2="${width - padding.right}" y2="${zeroY}" stroke="#585b70" stroke-width="1.2" stroke-dasharray="2,2"/>
           ` : ''}
 
-          <!-- Shaded Risk Corridor between Cap & Pace -->
+          <!-- Shaded Risk Corridor between Worst-Case Floor & Pace -->
           <path d="${corridorPath}" fill="url(#${chartId}-corridor)"/>
 
           <!-- Glowing Gradient Fill under Pace Curve -->
           <path d="${paceAreaPath}" fill="url(#${chartId}-pace-glow)"/>
 
-          <!-- Cap Risk Floor Curve (Dashed Coral Line) -->
-          <path d="${capCurve}" fill="none" stroke="#f38ba8" stroke-width="1.8" stroke-dasharray="5,4" stroke-opacity="0.85"/>
+          <!-- Worst-Case Floor Curve (Solid Red Line: Envelopes 100% Spent Immediately on Day 0) -->
+          <path d="${worstCurve}" fill="none" stroke="#f38ba8" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"/>
+
+          <!-- Linear Cap Risk Floor Curve (Dashed Sky Blue Line) -->
+          <path d="${capCurve}" fill="none" stroke="#74c7ec" stroke-width="1.8" stroke-dasharray="4,4" stroke-opacity="0.85"/>
 
           <!-- Pace Expected Trajectory Curve (Crisp Emerald Line) -->
           <path d="${paceCurve}" fill="none" stroke="#a6e3a1" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"/>
@@ -340,6 +374,7 @@ export function attachChartInteractions(rootElement) {
     const deltaEl = card.querySelector('[id$="-delta"]');
     const dateEl = card.querySelector('[id$="-date"]');
     const capEl = card.querySelector('[id$="-cap"]');
+    const worstEl = card.querySelector('[id$="-worst"]');
     const modeEl = card.querySelector('[id$="-mode"]');
     const bannerEl = card.querySelector('[id$="-event-banner"]');
 
@@ -349,6 +384,7 @@ export function attachChartInteractions(rootElement) {
     const defaultPt = points[points.length - 1];
     const defaultPace = defaultPt.pace;
     const defaultCap = defaultPt.cap;
+    const defaultWorst = defaultPt.worstCase ?? defaultPt.cap;
     const defaultDate = defaultPt.date;
     const defaultDelta = defaultPace - currentTotal;
     const defaultPct = currentTotal > 0 ? (defaultDelta / currentTotal) * 100 : 0;
@@ -367,6 +403,7 @@ export function attachChartInteractions(rootElement) {
         deltaEl.textContent = `${defaultIsPos ? '+' : ''}${formatINR(defaultDelta)} (${defaultIsPos ? '+' : ''}${defaultPct.toFixed(1)}%)`;
       }
       if (dateEl) dateEl.textContent = `${shortDate(defaultDate)} (${points.length - 1} days out)`;
+      if (worstEl) worstEl.textContent = formatINR(defaultWorst);
       if (capEl) capEl.textContent = formatINR(defaultCap);
       if (modeEl) modeEl.textContent = 'Expected Pace';
       lastIndex = -1;
@@ -397,8 +434,8 @@ export function attachChartInteractions(rootElement) {
       const svgX = pt.x;
       // Estimate Y proportional from height
       // Pace Y
-      const minVal = Math.min(...points.map((p) => Math.min(p.pace, p.cap)), 0);
-      const maxVal = Math.max(...points.map((p) => Math.max(p.pace, p.cap)), minVal + 1000);
+      const minVal = Math.min(...points.map((p) => Math.min(p.pace, p.cap, p.worstCase ?? p.cap)), 0);
+      const maxVal = Math.max(...points.map((p) => Math.max(p.pace, p.cap, p.worstCase ?? p.cap)), minVal + 1000);
       const valRange = maxVal - minVal || 1;
       const padding = { top: 20, bottom: 35 };
       const plotH = 300 - padding.top - padding.bottom;
@@ -423,6 +460,7 @@ export function attachChartInteractions(rootElement) {
         deltaEl.textContent = `${scrubIsPos ? '+' : ''}${formatINR(scrubDelta)} (${scrubIsPos ? '+' : ''}${scrubPct.toFixed(1)}%)`;
       }
       if (dateEl) dateEl.textContent = `${shortDate(pt.date)} (${idx}d from today)`;
+      if (worstEl) worstEl.textContent = formatINR(pt.worstCase ?? pt.cap);
       if (capEl) capEl.textContent = formatINR(pt.cap);
       if (modeEl) modeEl.textContent = `Scrubbing Day ${idx + 1}`;
 

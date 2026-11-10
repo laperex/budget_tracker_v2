@@ -71,3 +71,73 @@ test('projection - arbitrary future dates (Dec 23 vs Dec 24)', () => {
   // Cap on Dec 24 is lower than Cap on Dec 23 by exactly Sam's 1000!
   assert.equal(projDec23.capProjected - projDec24.capProjected, 1000);
 });
+
+test('projection - worst-case floor trajectory with budget envelopes already spent', () => {
+  const pools = [{ id: 'bank', name: 'Bank', opening: 20000 }];
+  const budgets = [
+    {
+      id: 'food',
+      name: 'Food',
+      kind: 'daily',
+      amount: 6000,
+      days: 30,
+      start: '2026-12-01',
+      funding: [{ poolId: 'bank', amount: 6000 }]
+    }
+  ];
+
+  const obligations = [
+    {
+      id: 'elec',
+      role: 'bill',
+      direction: 'pay',
+      counterparty: 'Electricity Co',
+      principal: 2500,
+      due: '2026-12-15',
+      status: 'confirmed'
+    },
+    {
+      id: 'loan',
+      role: 'debt',
+      counterparty: 'Sam',
+      direction: 'pay',
+      principal: 1000,
+      outstanding: 1000,
+      due: '2026-12-24',
+      status: 'confirmed'
+    }
+  ];
+
+  const proj = projectAtDate({
+    targetDate: '2026-12-24',
+    asOfDate: '2026-12-01',
+    pools,
+    budgets,
+    obligations,
+    ledgerEntries: []
+  });
+
+  const traj = proj.trajectory;
+  assert.ok(traj.length > 0);
+
+  // Day 0 (2026-12-01): 100% of food budget (6000) is deducted immediately: 20000 - 6000 = 14000
+  assert.equal(traj[0].date, '2026-12-01');
+  assert.equal(traj[0].worstCase, 14000);
+  assert.equal(traj[0].cap, 20000); // Gradual cap starts at full 20000
+
+  // Day 13 (2026-12-14): Still 14000 because electricity has not hit yet
+  const ptDec14 = traj.find((t) => t.date === '2026-12-14');
+  assert.equal(ptDec14.worstCase, 14000);
+
+  // Day 14 (2026-12-15): Electricity bill of 2500 hits: 14000 - 2500 = 11500
+  const ptDec15 = traj.find((t) => t.date === '2026-12-15');
+  assert.equal(ptDec15.worstCase, 11500);
+
+  // Day 23 (2026-12-24): Sam loan of 1000 hits: 11500 - 1000 = 10500
+  const ptDec24 = traj.find((t) => t.date === '2026-12-24');
+  assert.equal(ptDec24.worstCase, 10500);
+
+  // At the target date, worstCase converges with capProjected
+  assert.equal(ptDec24.worstCase, proj.capProjected);
+  assert.equal(proj.worstCaseProjected, 10500);
+});

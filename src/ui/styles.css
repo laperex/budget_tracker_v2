@@ -809,6 +809,73 @@ tr.active-row td {
   font-size: 11px;
 }
 
+.stock-header-stats {
+  display: flex;
+  gap: 14px;
+  align-items: flex-end;
+  flex-wrap: wrap;
+}
+
+.stock-stat-block {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-end;
+  font-family: var(--font-mono);
+  font-size: 11px;
+}
+
+.stock-stat-lbl {
+  font-size: 10px;
+  text-transform: uppercase;
+  font-weight: 700;
+  letter-spacing: 0.04em;
+  margin-bottom: 2px;
+}
+
+.stock-legend {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+  flex-wrap: wrap;
+  padding: 6px 12px;
+  background: var(--card-alt);
+  border: 1px solid var(--line);
+  margin-bottom: 12px;
+  font-family: var(--font-mono);
+  font-size: 10px;
+}
+
+.stock-legend-item {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  color: var(--mut);
+  white-space: nowrap;
+}
+
+.legend-line {
+  display: inline-block;
+  width: 14px;
+  height: 3px;
+  vertical-align: middle;
+}
+
+.legend-line.line-green {
+  background: var(--acc);
+}
+
+.legend-line.line-blue {
+  background: var(--sapphire);
+}
+
+.legend-line.line-blue.dashed {
+  background: repeating-linear-gradient(90deg, var(--sapphire) 0, var(--sapphire) 3px, transparent 3px, transparent 6px);
+}
+
+.legend-line.line-red {
+  background: var(--bad);
+}
+
 .stock-event-banner {
   display: flex;
   flex-wrap: wrap;
